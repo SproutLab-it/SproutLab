@@ -11,7 +11,7 @@ export default async function Home() {
 
   return (
     <div className="min-h-[calc(100vh-200px)] flex flex-col">
-      <section className="flex-1 flex items-center justify-center px-6 py-32 relative min-h-[560px] overflow-hidden">
+      <section className="flex-1 flex items-center justify-center px-6 pt-44 pb-32 relative min-h-[560px] overflow-hidden">
         {/* Background photo, blurred and scaled up slightly so the blur never reveals an edge */}
         <div
           className="absolute inset-0 scale-110"
