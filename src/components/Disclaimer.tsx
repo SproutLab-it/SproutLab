@@ -16,10 +16,7 @@ export function Disclaimer({ variant = "inline" }: DisclaimerProps) {
     return (
       <footer className="mt-auto bg-[#2E1B12] py-8">
         <div className="max-w-4xl mx-auto px-4 text-center">
-          <p className="text-sm text-white/60 mb-1">
-            {t.disclaimer.footer.consult}
-          </p>
-          <div className="mt-4 flex items-center justify-center gap-4 text-sm">
+          <div className="flex items-center justify-center gap-4 text-sm">
             <Link href="/methodology" className="text-[#FFB326] hover:underline">
               {t.disclaimer.footer.methodology}
             </Link>
