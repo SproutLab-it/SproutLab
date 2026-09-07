@@ -93,7 +93,7 @@ export default function ResultsPage() {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [email, setEmail] = useState("");
-  const [emailState, setEmailState] = useState<"idle" | "sending" | "sent">("idle");
+  const [emailState, setEmailState] = useState<"idle" | "sending" | "sent" | "error">("idle");
 
   useEffect(() => {
     const storedProfile = sessionStorage.getItem("intakeProfile");
@@ -125,10 +125,18 @@ export default function ResultsPage() {
 
   const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email || emailState !== "idle") return;
+    if (!email || !profile || emailState === "sending") return;
     setEmailState("sending");
-    await new Promise((r) => setTimeout(r, 800));
-    setEmailState("sent");
+    try {
+      const res = await fetch("/api/send-plan", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: email.trim(), profile, locale }),
+      });
+      setEmailState(res.ok ? "sent" : "error");
+    } catch {
+      setEmailState("error");
+    }
   };
 
   const recommendedSlugs = recommendations.map((r) => r.slug);
@@ -172,6 +180,9 @@ export default function ResultsPage() {
               <>
                 <p className="text-sm text-[#2E1B12] mb-1">{tr.email.cta}</p>
                 <p className="text-xs text-[#9C8B78] mb-4">{tr.email.hint}</p>
+                {emailState === "error" && (
+                  <p className="text-xs text-[#B4441F] mb-3">{tr.email.error}</p>
+                )}
                 <form onSubmit={handleEmailSubmit} className="flex gap-2 flex-wrap">
                   <input
                     type="email"

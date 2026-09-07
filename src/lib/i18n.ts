@@ -277,6 +277,7 @@ const en = {
       sentSuffix: "— check your inbox.",
       send: "Send my plan →",
       sending: "Sending…",
+      error: "Something went wrong sending your plan. Please try again.",
     },
     stats: {
       supplements: "Supplements",
@@ -697,6 +698,7 @@ const it: typeof en = {
       sentSuffix: "— controlla la tua casella di posta.",
       send: "Invia il mio piano →",
       sending: "Invio in corso…",
+      error: "Qualcosa è andato storto nell'invio del piano. Riprova.",
     },
     stats: {
       supplements: "Integratori",
