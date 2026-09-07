@@ -26,9 +26,6 @@ export default async function Home() {
         {/* Dark brand-brown veil (not plain black) so white text stays reliably legible over the photo */}
         <div className="absolute inset-0" style={{ backgroundColor: "rgba(46,27,18,0.72)" }} />
         <div className="max-w-2xl mx-auto text-center relative z-10">
-          <p className="text-xs tracking-widest uppercase text-white/70 mb-6">
-            {h.tagline}
-          </p>
           <h1 className="text-4xl md:text-6xl font-normal text-white mb-6 leading-tight uppercase" style={{ letterSpacing: "-0.04em" }}>
             {h.hero.title[0]}<br />{h.hero.title[1]}
           </h1>
