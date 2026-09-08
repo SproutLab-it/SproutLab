@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { headers } from "next/headers";
 import { getT } from "@/lib/i18n";
@@ -10,41 +11,33 @@ export default async function Home() {
   const h = t.home;
 
   return (
-    <div className="min-h-[calc(100vh-200px)] flex flex-col">
-      <section className="flex-1 flex items-center justify-center px-6 pt-44 pb-32 relative min-h-[560px] overflow-hidden">
-        {/* Background photo, blurred and scaled up slightly so the blur never reveals an edge */}
-        <div
-          className="absolute inset-0 scale-110"
-          style={{
-            backgroundImage: "url('/hero-bg.jpg')",
-            backgroundSize: "cover",
-            backgroundPosition: "center",
-            backgroundRepeat: "no-repeat",
-            filter: "blur(8px)",
-          }}
-        />
-        {/* Dark brand-brown veil (not plain black) so white text stays reliably legible over the photo */}
-        <div className="absolute inset-0" style={{ backgroundColor: "rgba(46,27,18,0.72)" }} />
-        <div className="max-w-2xl mx-auto text-center relative z-10">
-          <h1 className="text-4xl md:text-6xl font-normal text-white mb-6 leading-tight uppercase" style={{ letterSpacing: "-0.04em" }}>
-            {h.hero.title[0]}<br />{h.hero.title[1]}
-          </h1>
-          <p className="text-lg text-white/80 mb-10 max-w-xl mx-auto leading-relaxed">
-            {h.hero.subtitle}
-          </p>
-          <Link
-            href="/intake"
-            className="inline-flex items-center justify-between gap-8 px-8 py-4 bg-[#FFB326] text-[#2E1B12] rounded-full font-medium hover:bg-[#e6a020] transition-colors"
-          >
-            <span>{h.hero.cta}</span>
-            <span>→</span>
-          </Link>
-          <p className="mt-5 text-sm text-white/60">
-            {h.hero.meta}
-          </p>
-          <p className="mt-3 text-xs text-white/40 max-w-sm mx-auto leading-relaxed">
-            {h.hero.privacy}
-          </p>
+    <div className="flex flex-col">
+      <section className="relative min-h-[600px] md:min-h-[720px] lg:min-h-[820px] w-full overflow-hidden">
+        <Image src="/hero-bg.jpg" alt="" fill priority className="object-cover" />
+        {/* Bottom-up gradient so the photo stays crisp and only darkens behind the text */}
+        <div className="absolute inset-0 bg-gradient-to-t from-[#2E1B12]/85 via-[#2E1B12]/10 to-transparent" />
+        <div className="absolute inset-x-0 bottom-0 px-6 md:px-16 pb-14 md:pb-20">
+          <div className="max-w-3xl">
+            <h1 className="text-5xl md:text-7xl lg:text-8xl font-normal text-white uppercase leading-[0.95] mb-6" style={{ letterSpacing: "-0.04em" }}>
+              {h.hero.title[0]}<br />{h.hero.title[1]}
+            </h1>
+            <p className="text-base md:text-lg text-white/85 max-w-xl mb-8 leading-relaxed">
+              {h.hero.subtitle}
+            </p>
+            <div className="flex flex-wrap items-center gap-6">
+              <Link
+                href="/intake"
+                className="inline-flex items-center gap-3 px-8 py-3 bg-[#FFB326] text-[#2E1B12] rounded-full font-normal hover:bg-[#e6a020] transition-colors"
+              >
+                <span>{h.hero.cta}</span>
+                <span>→</span>
+              </Link>
+              <span className="text-sm text-white/70">{h.hero.meta}</span>
+            </div>
+            <p className="mt-4 text-xs text-white/50 max-w-sm leading-relaxed">
+              {h.hero.privacy}
+            </p>
+          </div>
         </div>
       </section>
 
