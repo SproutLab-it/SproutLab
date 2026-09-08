@@ -41,7 +41,7 @@ export default async function Home() {
         </div>
       </section>
 
-      <section className="py-16 px-6 border-t border-[#2E1B12]/10">
+      <section className="pt-8 pb-16 px-6 border-t border-[#2E1B12]/10">
         <div className="max-w-4xl mx-auto">
           <div className="grid md:grid-cols-3 gap-0 divide-y md:divide-y-0 md:divide-x divide-[#2E1B12]/10">
             <FeatureItem label={h.features.schedule.label} description={h.features.schedule.desc} />
