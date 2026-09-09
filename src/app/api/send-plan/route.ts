@@ -17,15 +17,20 @@ const SPROUT_MIN_MATCH = 2;
 // Display metadata for the two Sprout Lab products. Mirrors SPROUTLAB_PRODUCTS
 // in src/app/results/page.tsx (name / tagline / url only; the match logic
 // itself comes from SPROUT_PRODUCT_MATCH_SLUGS in the engine).
-const SPROUT_PRODUCT_META: Record<string, { name: string; tagline: string; url: string }> = {
+const SPROUT_PRODUCT_META: Record<
+  string,
+  { name: string; tagline: string; taglineIt: string; url: string }
+> = {
   mycofuel: {
     name: "Mycofuel",
     tagline: "Energy, endurance & adaptogens",
+    taglineIt: "Energia, resistenza e adattogeni",
     url: "https://sproutlab.it/shop/mycofuel/",
   },
   mycoderm: {
     name: "Mycoderm",
     tagline: "Skin health, cellular protection & glow",
+    taglineIt: "Salute della pelle, protezione cellulare e luminosità",
     url: "https://sproutlab.it/shop/mycoderm/",
   },
 };
@@ -75,7 +80,9 @@ export async function POST(req: NextRequest) {
     .map(([id, matchSlugs]) => {
       const matchedCount = matchSlugs.filter((s) => recSlugs.has(s)).length;
       const meta = SPROUT_PRODUCT_META[id];
-      return meta ? { ...meta, matchedCount } : null;
+      if (!meta) return null;
+      const { taglineIt, tagline, ...rest } = meta;
+      return { ...rest, tagline: emailLocale === "it" ? taglineIt : tagline, matchedCount };
     })
     .filter((p): p is SproutEmailProduct => p !== null && p.matchedCount >= SPROUT_MIN_MATCH);
 

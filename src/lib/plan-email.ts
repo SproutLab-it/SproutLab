@@ -24,11 +24,11 @@ const COPY: Record<
   }
 > = {
   en: {
-    subject: "Your evidence-based supplement plan",
+    subject: "Your supplement plan is ready!",
     preheader: "Your full daily schedule: what to take, when, and how.",
     heading: "Your supplement plan",
     intro:
-      "Here is your personalized plan, based on the answers you gave. Keep this email for reference. Nothing was saved on our side.",
+      "Here is your personalized plan, based on the answers you gave and the related scientific evidence. Keep this email for reference. We didn't save any of your data.",
     timeLabels: { morning: "Morning", afternoon: "Afternoon", evening: "Evening" },
     withFood: "with food",
     withFat: "with a source of fat",
@@ -41,14 +41,14 @@ const COPY: Record<
     disclaimer:
       "This plan is educational and not medical advice. Talk to a doctor or pharmacist before starting any supplement, especially if you take medication, are pregnant or breastfeeding, or have a health condition.",
     footerNote: "Sprout - evidence-based supplement planner",
-    openPlan: "Open the planner",
+    openPlan: "Back to the questionnaire",
   },
   it: {
-    subject: "Il tuo piano di integratori basato su evidenze",
+    subject: "Il tuo piano di integratori è pronto!",
     preheader: "Il tuo programma giornaliero completo: cosa prendere, quando e come.",
     heading: "Il tuo piano di integratori",
     intro:
-      "Ecco il tuo piano personalizzato, basato sulle risposte che hai dato. Conserva questa email come riferimento. Non abbiamo salvato nulla da parte nostra.",
+      "Ecco il tuo piano personalizzato, basato sulle risposte che hai dato e le evidenze scientifiche correlate. Conserva questa email come riferimento. Non abbiamo salvato nessuno dei tuoi dati.",
     timeLabels: { morning: "Mattina", afternoon: "Pomeriggio", evening: "Sera" },
     withFood: "a stomaco pieno",
     withFat: "con una fonte di grassi",
@@ -61,7 +61,7 @@ const COPY: Record<
     disclaimer:
       "Questo piano ha scopo informativo e non è un consiglio medico. Parla con un medico o un farmacista prima di iniziare qualsiasi integratore, soprattutto se assumi farmaci, sei in gravidanza o allattamento, o hai una condizione di salute.",
     footerNote: "Sprout - pianificatore di integratori basato su evidenze",
-    openPlan: "Apri il pianificatore",
+    openPlan: "Torna al questionario",
   },
 };
 
