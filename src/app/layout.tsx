@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { headers } from "next/headers";
-import { Disclaimer, IframeResizer, LocaleProvider } from "@/components";
+import { IframeResizer, LocaleProvider } from "@/components";
 import type { Locale } from "@/lib/i18n";
 import "./globals.css";
 
@@ -25,14 +25,18 @@ export default async function RootLayout({
 }>) {
   const headerStore = await headers();
   const locale = (headerStore.get("x-locale") ?? "en") as Locale;
+  // When the app is loaded inside the WordPress iframe the height must be
+  // purely content-driven, otherwise `min-h-screen` (100vh = the iframe's own
+  // viewport) and the IframeResizer feed each other and leave a tall empty
+  // gap at the bottom. Standalone visits still get a full-height layout.
+  const embedded = headerStore.get("sec-fetch-dest") === "iframe";
 
   return (
     <html lang={locale}>
-      <body className="antialiased min-h-screen flex flex-col">
+      <body className={`antialiased flex flex-col${embedded ? "" : " min-h-screen"}`}>
         <IframeResizer />
         <LocaleProvider locale={locale}>
-          <main className="flex-1 flex flex-col">{children}</main>
-          <Disclaimer variant="footer" />
+          <main className={embedded ? "" : "flex-1 flex flex-col"}>{children}</main>
         </LocaleProvider>
       </body>
     </html>

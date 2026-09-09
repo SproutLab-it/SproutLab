@@ -155,7 +155,7 @@ export default function ResultsPage() {
   );
 
   return (
-    <div className="grow bg-[#FCFCF7] py-12 px-4">
+    <div className="grow bg-[#FCFCF7] pt-20 pb-12 px-4">
       <div className="max-w-4xl mx-auto">
 
         <div className="mb-8">
