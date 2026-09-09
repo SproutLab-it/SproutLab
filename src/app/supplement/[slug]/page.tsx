@@ -54,7 +54,7 @@ export default async function SupplementPage({ params }: PageProps) {
 
           {/* Header */}
           <div className="p-8 md:p-12 border-b border-[#2E1B12]/10">
-            <p className="text-xs tracking-widest uppercase text-[#9C8B78] mb-3">Sprout — Supplement</p>
+            <p className="text-xs tracking-widest uppercase text-[#9C8B78] mb-3">Sprout - Supplement</p>
             <div className="flex items-start justify-between gap-4 mb-4">
               <h1 className="text-3xl md:text-4xl font-normal text-[#2E1B12] leading-tight">
                 {supplement.name}
@@ -132,7 +132,7 @@ export default async function SupplementPage({ params }: PageProps) {
                           <span className="text-xs tracking-widest uppercase text-[#FFB326] flex-shrink-0 w-12 mt-0.5">Space</span>
                           <div>
                             <p className="text-sm font-medium text-[#2E1B12]">
-                              {p.item}{p.separationHours ? ` — ${p.separationHours}h apart` : ""}
+                              {p.item}{p.separationHours ? ` (${p.separationHours}h apart)` : ""}
                             </p>
                             <p className="text-xs text-[#9C8B78] mt-0.5">{p.reason}</p>
                           </div>

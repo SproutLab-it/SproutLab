@@ -504,7 +504,7 @@
     {
       "name": "Iron",
       "slug": "iron",
-      "description": "Essential mineral for oxygen transport in blood. Deficiency causes fatigue and anemia. Only supplement if deficient—excess iron is harmful.",
+      "description": "Essential mineral for oxygen transport in blood. Deficiency causes fatigue and anemia. Only supplement if deficient. Excess iron is harmful.",
       "dosageRange": "18-27mg daily (only if deficient)",
       "defaultTiming": {
         "timeOfDay": "morning",
@@ -730,7 +730,7 @@
         }
       ],
       "goals": ["longevity"],
-      "cautionNote": "If taking blood thinners (warfarin/coumadin), consult your doctor—K2 affects clotting factors."
+      "cautionNote": "If taking blood thinners (warfarin/coumadin), consult your doctor. K2 affects clotting factors."
     },
     {
       "name": "L-Theanine",
@@ -1124,7 +1124,7 @@
       "separateFrom": [
         {
           "item": "Antibiotics",
-          "reason": "Antibiotics kill probiotic bacteria — separate by at least 2 hours",
+          "reason": "Antibiotics kill probiotic bacteria, separate by at least 2 hours",
           "evidenceLevel": "high",
           "citationIds": [],
           "separationHours": 2
@@ -1299,7 +1299,7 @@
     {
       "name": "NAC (N-Acetyl Cysteine)",
       "slug": "nac",
-      "description": "Precursor to glutathione — the body's master antioxidant. Supports liver detox and respiratory health.",
+      "description": "Precursor to glutathione, the body's master antioxidant. Supports liver detox and respiratory health.",
       "dosageRange": "600-1200mg daily",
       "defaultTiming": {
         "timeOfDay": "morning",
@@ -1637,7 +1637,7 @@
       "pairWith": [
         {
           "item": "Rhodiola Rosea",
-          "reason": "Complementary adaptogens — both support endurance and reduce exercise fatigue",
+          "reason": "Complementary adaptogens, both support endurance and reduce exercise fatigue",
           "evidenceLevel": "moderate",
           "citationIds": []
         }
@@ -1722,7 +1722,7 @@
       "pairWith": [
         {
           "item": "Lion's Mane",
-          "reason": "Complementary mushrooms — reishi modulates immunity while Lion's Mane supports neurological function",
+          "reason": "Complementary mushrooms: reishi modulates immunity while Lion's Mane supports neurological function",
           "evidenceLevel": "low",
           "citationIds": []
         }
@@ -1891,7 +1891,7 @@
         },
         {
           "item": "Vitamin E",
-          "reason": "Synergistic antioxidant activity — astaxanthin and vitamin E protect lipid membranes from oxidation",
+          "reason": "Synergistic antioxidant activity: astaxanthin and vitamin E protect lipid membranes from oxidation",
           "evidenceLevel": "moderate",
           "citationIds": []
         }
@@ -2056,7 +2056,7 @@
     {
       "slug": "electrolytes",
       "name": "Electrolytes",
-      "description": "Blend of minerals — typically sodium, potassium, magnesium, and chloride — that regulate hydration, nerve function, and muscle performance.",
+      "description": "Blend of minerals (typically sodium, potassium, magnesium, and chloride) that regulate hydration, nerve function, and muscle performance.",
       "goals": ["energy", "muscle"],
       "evidenceLevel": "high",
       "dosageRange": "1 serving daily, or as needed around exercise",

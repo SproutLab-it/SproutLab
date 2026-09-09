@@ -103,7 +103,7 @@ function getArchetype(profile: UserProfile): { name: string; tagline: string; im
   if (goals.has("sleep") && (profile.sleepQuality === "poor" || (profile.sleepHours !== undefined && profile.sleepHours < 6)))
     return { name: "THE SLEEP DEBT PROJECT", tagline: "Recovery is where the real gains happen.", image: "/archetypes/sleep-debt-project.jpg" };
   if (goals.has("longevity") && !isHighStress)
-    return { name: "THE LONGEVITY PLAY", tagline: "Not just living longer — living better.", image: "/archetypes/longevity-play.jpg" };
+    return { name: "THE LONGEVITY PLAY", tagline: "Not just living longer, living better.", image: "/archetypes/longevity-play.jpg" };
   if (isHighStress || goals.has("stress"))
     return { name: "THE BURNOUT ANTIDOTE", tagline: "High pressure meets high resilience.", image: "/archetypes/burnout-antidote.jpg" };
   if (goals.has("skin"))
@@ -119,26 +119,26 @@ function generateInsights(profile: UserProfile, scores: WellnessScores): string[
   const out: string[] = [];
 
   if (profile.caffeineIntake === "high" && (profile.sleepQuality === "poor" || profile.sleepQuality === "fair"))
-    out.push("High caffeine is likely disrupting your sleep — a cycle your stack helps break");
+    out.push("High caffeine is likely disrupting your sleep, a cycle your stack helps break");
   if (profile.stressLevel === "high" && profile.sleepQuality !== "excellent" && profile.sleepQuality !== "good")
     out.push("Your stress load is outpacing your recovery window");
   if (profile.sunExposure === "low")
-    out.push("Low sun exposure makes D3 critical — most indoor-living people are quietly deficient");
+    out.push("Low sun exposure makes D3 critical. Most indoor-living people are quietly deficient");
   if (profile.diet === "vegan" || profile.diet === "vegetarian")
-    out.push("Plant-based diet means B12 depletes silently — supplementing is non-negotiable");
+    out.push("Plant-based diet means B12 depletes silently. Supplementing is non-negotiable");
   if (profile.exerciseFrequency === "sedentary")
     out.push("20 min of daily movement would shift your longevity score more than any supplement");
   if (profile.sleepHours !== undefined && profile.sleepHours < 6)
-    out.push("Under 6h sleep accelerates cognitive decline — your stack prioritizes this gap");
+    out.push("Under 6h sleep accelerates cognitive decline. Your stack prioritizes this gap");
 
   const sorted = (Object.entries(scores) as [keyof WellnessScores, number][]).sort((a, b) => b[1] - a[1]);
   const [strongest] = sorted;
   const weakest = sorted[sorted.length - 1];
 
   if (out.length < 2)
-    out.push(`Strongest pillar: ${DIM_LABELS[strongest[0]]} (${strongest[1]}) — your plan reinforces this`);
+    out.push(`Strongest pillar: ${DIM_LABELS[strongest[0]]} (${strongest[1]}). Your plan reinforces this`);
   if (out.length < 3)
-    out.push(`Biggest lever: ${DIM_LABELS[weakest[0]]} (${weakest[1]}) — targeted support in your stack`);
+    out.push(`Biggest lever: ${DIM_LABELS[weakest[0]]} (${weakest[1]}). Targeted support in your stack`);
 
   return out.slice(0, 3);
 }
@@ -283,7 +283,7 @@ export function WellnessProfileCard({ profile }: WellnessProfileCardProps) {
     if (!cardRef.current || shareState === "generating") return;
     setShareState("generating");
     try {
-      // Hide elements that html-to-image struggles with — we'll draw them manually on canvas
+      // Hide elements that html-to-image struggles with, so we draw them manually on canvas
       if (footerRef.current) footerRef.current.style.display = "none";
       if (bgImgRef.current) bgImgRef.current.style.visibility = "hidden";
       if (overlayRef.current) overlayRef.current.style.visibility = "hidden";
@@ -407,7 +407,7 @@ export function WellnessProfileCard({ profile }: WellnessProfileCardProps) {
       </div>
 
       <div className="px-4 md:px-12 pt-4 md:pt-6 pb-6 md:pb-10">
-        {/* Archetype — left aligned, sits near the top */}
+        {/* Archetype block, left aligned, near the top */}
         <div className="mb-6 md:mb-10">
           <p className="text-[9px] tracking-[0.2em] uppercase text-[#FFB326]/90 mb-1.5 md:mb-3">Your archetype</p>
           <h2 className="text-lg md:text-[38px] font-normal text-[#FFB326] leading-tight mb-1.5 md:mb-3 tracking-tight">
@@ -424,7 +424,7 @@ export function WellnessProfileCard({ profile }: WellnessProfileCardProps) {
           </div>
         </div>
 
-        {/* Radar + overall score — centered */}
+        {/* Radar + overall score, centered */}
         <div className="flex flex-col items-center gap-1 mb-4 md:mb-6">
           <div className="w-[230px] h-[230px] md:w-[320px] md:h-[320px]">
             <WellnessRadarChart scores={scores} progress={progress} size={240} />

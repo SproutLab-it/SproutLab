@@ -25,10 +25,10 @@ const COPY: Record<
 > = {
   en: {
     subject: "Your evidence-based supplement plan",
-    preheader: "Your full daily schedule — what to take, when, and how.",
+    preheader: "Your full daily schedule: what to take, when, and how.",
     heading: "Your supplement plan",
     intro:
-      "Here is your personalized plan, based on the answers you gave. Keep this email for reference — nothing was saved on our side.",
+      "Here is your personalized plan, based on the answers you gave. Keep this email for reference. Nothing was saved on our side.",
     timeLabels: { morning: "Morning", afternoon: "Afternoon", evening: "Evening" },
     withFood: "with food",
     withFat: "with a source of fat",
@@ -40,15 +40,15 @@ const COPY: Record<
     shop: (name) => `Shop ${name}`,
     disclaimer:
       "This plan is educational and not medical advice. Talk to a doctor or pharmacist before starting any supplement, especially if you take medication, are pregnant or breastfeeding, or have a health condition.",
-    footerNote: "Sprout — evidence-based supplement planner",
+    footerNote: "Sprout - evidence-based supplement planner",
     openPlan: "Open the planner",
   },
   it: {
     subject: "Il tuo piano di integratori basato su evidenze",
-    preheader: "Il tuo programma giornaliero completo — cosa prendere, quando e come.",
+    preheader: "Il tuo programma giornaliero completo: cosa prendere, quando e come.",
     heading: "Il tuo piano di integratori",
     intro:
-      "Ecco il tuo piano personalizzato, basato sulle risposte che hai dato. Conserva questa email come riferimento — non abbiamo salvato nulla da parte nostra.",
+      "Ecco il tuo piano personalizzato, basato sulle risposte che hai dato. Conserva questa email come riferimento. Non abbiamo salvato nulla da parte nostra.",
     timeLabels: { morning: "Mattina", afternoon: "Pomeriggio", evening: "Sera" },
     withFood: "a stomaco pieno",
     withFat: "con una fonte di grassi",
@@ -60,7 +60,7 @@ const COPY: Record<
     shop: (name) => `Acquista ${name}`,
     disclaimer:
       "Questo piano ha scopo informativo e non è un consiglio medico. Parla con un medico o un farmacista prima di iniziare qualsiasi integratore, soprattutto se assumi farmaci, sei in gravidanza o allattamento, o hai una condizione di salute.",
-    footerNote: "Sprout — pianificatore di integratori basato su evidenze",
+    footerNote: "Sprout - pianificatore di integratori basato su evidenze",
     openPlan: "Apri il pianificatore",
   },
 };

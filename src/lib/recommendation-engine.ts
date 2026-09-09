@@ -33,7 +33,7 @@ const dietSupplementPriority: Record<Diet, string[]> = {
 };
 
 // Single source of truth for which ingredients count toward a Sprout Lab
-// product "match" — shared with the results page so the guarantee below
+// product "match", shared with the results page so the guarantee below
 // (generateRecommendations always keeps at least one product eligible)
 // stays in sync with what the UI actually checks.
 export const SPROUT_PRODUCT_MATCH_SLUGS: Record<string, string[]> = {
@@ -42,7 +42,7 @@ export const SPROUT_PRODUCT_MATCH_SLUGS: Record<string, string[]> = {
 };
 
 // A Sprout product card only shows once this many of its ingredients are
-// in the plan — keep in step with the ".filter" in results/page.tsx.
+// in the plan; keep in step with the ".filter" in results/page.tsx.
 const SPROUT_MIN_MATCH = 2;
 
 // Cap the final plan so it never feels overwhelming.

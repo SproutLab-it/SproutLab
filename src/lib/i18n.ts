@@ -2,12 +2,12 @@ export type Locale = "en" | "it";
 
 const en = {
   home: {
-    tagline: "Sprout — Supplement Planner",
+    tagline: "Sprout - Supplement Planner",
     hero: {
       title: ["Your Personal", "Supplement Plan"],
       subtitle:
         "Get an evidence-based supplement schedule tailored to your goals. Know what to take, when to take it, and what to avoid.",
-      cta: "Get my supplement plan",
+      cta: "Create your supplement plan",
       meta: "Free · No account required · Takes 3 minutes",
       privacy:
         "Your responses help us tailor your supplement plan in real time. Your data is not stored and is used only for this session.",
@@ -15,7 +15,7 @@ const en = {
     features: {
       schedule: {
         label: "Daily Schedule",
-        desc: "Know exactly when to take each supplement — morning, afternoon, or evening — for optimal absorption.",
+        desc: "Know exactly when to take each supplement (morning, afternoon, or evening) for optimal absorption.",
       },
       pairing: {
         label: "Pairing Guidance",
@@ -49,7 +49,7 @@ const en = {
 
   intake: {
     backHome: "← Back",
-    tagline: "Sprout — Intake",
+    tagline: "Sprout - Intake",
     title: "Calibrate your plan",
     subtitle: "Based on your data",
     stepLabels: [
@@ -235,7 +235,7 @@ const en = {
       high: "High (demanding/high-pressure)",
     },
     skinTypes: {
-      normal: { label: "Normal", desc: "Balanced — not too dry or oily, few imperfections" },
+      normal: { label: "Normal", desc: "Balanced, not too dry or oily, few imperfections" },
       dry: { label: "Dry", desc: "Tight, flaky or rough texture, prone to sensitivity" },
       oily: { label: "Oily", desc: "Shiny, enlarged pores, prone to breakouts" },
       mixed: { label: "Mixed", desc: "Oily T-zone, dry or normal on cheeks" },
@@ -267,14 +267,14 @@ const en = {
 
   results: {
     retake: "← Retake questionnaire",
-    tagline: "Sprout — Your Plan",
+    tagline: "Sprout - Your Plan",
     title: ["Your Personalized Supplement", "Plan is Ready"],
     loading: "Generating your plan…",
     email: {
       cta: "Receive your plan by email",
       hint: "We'll send your full supplement schedule so you can reference it anytime.",
       sentPrefix: "Plan sent to",
-      sentSuffix: "— check your inbox.",
+      sentSuffix: ". Check your inbox.",
       send: "Send my plan →",
       sending: "Sending…",
       error: "Something went wrong sending your plan. Please try again.",
@@ -323,7 +323,7 @@ const en = {
 
   methodology: {
     back: "← Back",
-    tagline: "Sprout — Methodology",
+    tagline: "Sprout - Methodology",
     title: "Our Methodology",
     subtitle:
       "Sprout uses a transparent, evidence-based approach to generate personalised supplement recommendations. Here's how it works.",
@@ -423,12 +423,12 @@ const en = {
 
 const it: typeof en = {
   home: {
-    tagline: "Sprout — Pianificatore di Integratori",
+    tagline: "Sprout - Pianificatore di Integratori",
     hero: {
       title: ["Il Tuo Piano Personale", "di Integratori"],
       subtitle:
         "Ottieni un piano di integrazione basato su evidenze scientifiche, personalizzato per i tuoi obiettivi. Scopri cosa prendere, quando prenderlo e cosa evitare.",
-      cta: "Ottieni il mio piano",
+      cta: "Crea il tuo piano di integratori",
       meta: "Gratuito · Senza registrazione · Richiede 3 minuti",
       privacy:
         "Le tue risposte ci aiutano a personalizzare il tuo piano in tempo reale. I tuoi dati non vengono memorizzati e vengono utilizzati solo per questa sessione.",
@@ -436,7 +436,7 @@ const it: typeof en = {
     features: {
       schedule: {
         label: "Piano Giornaliero",
-        desc: "Scopri esattamente quando prendere ogni integratore — mattina, pomeriggio o sera — per un assorbimento ottimale.",
+        desc: "Scopri esattamente quando prendere ogni integratore (mattina, pomeriggio o sera) per un assorbimento ottimale.",
       },
       pairing: {
         label: "Guida alle Combinazioni",
@@ -470,7 +470,7 @@ const it: typeof en = {
 
   intake: {
     backHome: "← Indietro",
-    tagline: "Sprout — Questionario",
+    tagline: "Sprout - Questionario",
     title: "Calibra il tuo piano",
     subtitle: "Basato sui tuoi dati",
     stepLabels: [
@@ -656,7 +656,7 @@ const it: typeof en = {
       high: "Alto (ambiente esigente/sotto pressione)",
     },
     skinTypes: {
-      normal: { label: "Normale", desc: "Bilanciata — né troppo secca né grassa, poche imperfezioni" },
+      normal: { label: "Normale", desc: "Bilanciata, né troppo secca né grassa, poche imperfezioni" },
       dry: { label: "Secca", desc: "Tesa, squamosa o ruvida, tendente alla sensibilità" },
       oily: { label: "Grassa", desc: "Lucida, pori dilatati, tendente a imperfezioni" },
       mixed: { label: "Mista", desc: "Zona T grassa, guance secche o normali" },
@@ -688,14 +688,14 @@ const it: typeof en = {
 
   results: {
     retake: "← Rifai il questionario",
-    tagline: "Sprout — Il Tuo Piano",
+    tagline: "Sprout - Il Tuo Piano",
     title: ["Il tuo piano di integratori", "personalizzato è pronto"],
     loading: "Generazione del piano in corso…",
     email: {
       cta: "Ricevi il tuo piano via email",
       hint: "Ti invieremo il piano completo degli integratori così puoi consultarlo in qualsiasi momento.",
       sentPrefix: "Piano inviato a",
-      sentSuffix: "— controlla la tua casella di posta.",
+      sentSuffix: ". Controlla la tua casella di posta.",
       send: "Invia il mio piano →",
       sending: "Invio in corso…",
       error: "Qualcosa è andato storto nell'invio del piano. Riprova.",
@@ -745,7 +745,7 @@ const it: typeof en = {
 
   methodology: {
     back: "← Indietro",
-    tagline: "Sprout — Metodologia",
+    tagline: "Sprout - Metodologia",
     title: "La Nostra Metodologia",
     subtitle:
       "Sprout utilizza un approccio trasparente e basato su evidenze scientifiche per generare raccomandazioni personalizzate sugli integratori. Ecco come funziona.",

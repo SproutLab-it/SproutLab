@@ -69,7 +69,7 @@ export default async function MethodologyPage() {
                   <span className="w-1.5 h-1.5 rounded-full bg-[#FFB326] flex-shrink-0 mt-2" />
                   <div>
                     <span className="text-sm font-medium text-[#2E1B12]">{source.name}</span>
-                    <span className="text-sm text-[#9C8B78]"> — {source.desc}</span>
+                    <span className="text-sm text-[#9C8B78]">: {source.desc}</span>
                   </div>
                 </div>
               ))}

@@ -173,7 +173,7 @@ export default function ResultsPage() {
               <div className="flex items-center gap-3">
                 <span className="w-1.5 h-1.5 rounded-full bg-[#FFB326] flex-shrink-0" />
                 <p className="text-sm text-[#2E1B12]">
-                  {tr.email.sentPrefix} <span className="font-medium">{email}</span> {tr.email.sentSuffix}
+                  {tr.email.sentPrefix} <span className="font-medium">{email}</span>{tr.email.sentSuffix}
                 </p>
               </div>
             ) : (

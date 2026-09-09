@@ -15,7 +15,7 @@ export const runtime = "nodejs";
 const SPROUT_MIN_MATCH = 2;
 
 // Display metadata for the two Sprout Lab products. Mirrors SPROUTLAB_PRODUCTS
-// in src/app/results/page.tsx (name / tagline / url only — the match logic
+// in src/app/results/page.tsx (name / tagline / url only; the match logic
 // itself comes from SPROUT_PRODUCT_MATCH_SLUGS in the engine).
 const SPROUT_PRODUCT_META: Record<string, { name: string; tagline: string; url: string }> = {
   mycofuel: {
