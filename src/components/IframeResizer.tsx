@@ -15,12 +15,19 @@ export function IframeResizer() {
     document.documentElement.setAttribute("data-embedded", "");
 
     const send = () => {
-      const height = Math.max(
-        document.documentElement.scrollHeight,
-        document.body?.scrollHeight ?? 0,
-        document.documentElement.offsetHeight,
+      const body = document.body;
+      if (!body) return;
+      // Measure the BODY, not documentElement: <html>.scrollHeight and
+      // .offsetHeight are floored at the iframe's own viewport height, so once
+      // the parent has grown the frame they never report anything smaller and
+      // the frame can only ever grow. body.scrollHeight tracks the real content
+      // and lets the frame shrink back down (e.g. tall homepage -> short step).
+      const height = Math.ceil(
+        Math.max(body.scrollHeight, body.getBoundingClientRect().height),
       );
-      window.parent.postMessage({ type: "intake-resize", height }, "*");
+      if (height > 0) {
+        window.parent.postMessage({ type: "intake-resize", height }, "*");
+      }
     };
 
     send();
