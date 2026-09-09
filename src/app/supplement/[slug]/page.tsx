@@ -1,11 +1,20 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import { headers } from "next/headers";
 import { getSupplementBySlug, getAllSupplements } from "@/lib/recommendation-engine";
+import { localizeSupplementData } from "@/lib/supplement-i18n";
+import { getT } from "@/lib/i18n";
+import type { Locale } from "@/lib/i18n";
 import { BenefitRadarChart } from "@/components";
 
 
 interface PageProps {
   params: Promise<{ slug: string }>;
+}
+
+async function getLocale(): Promise<Locale> {
+  const headerStore = await headers();
+  return (headerStore.get("x-locale") ?? "en") as Locale;
 }
 
 export async function generateStaticParams() {
@@ -15,30 +24,29 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }: PageProps) {
   const { slug } = await params;
-  const supplement = getSupplementBySlug(slug);
-  if (!supplement) return { title: "Supplement Not Found | Sprout" };
+  const locale = await getLocale();
+  const raw = getSupplementBySlug(slug);
+  if (!raw) return { title: getT(locale).supplement.notFoundTitle };
+  const supplement = localizeSupplementData(raw, locale);
   return { title: `${supplement.name} | Sprout`, description: supplement.description };
 }
 
-const evidenceStyles = {
-  high: { dot: "bg-[#4A7C59]", label: "High evidence" },
-  moderate: { dot: "bg-[#FFB326]", label: "Moderate evidence" },
-  low: { dot: "bg-[#2E1B12]/20", label: "Low evidence" },
-};
-
 export default async function SupplementPage({ params }: PageProps) {
   const { slug } = await params;
-  const supplement = getSupplementBySlug(slug);
-  if (!supplement) notFound();
+  const locale = await getLocale();
+  const raw = getSupplementBySlug(slug);
+  if (!raw) notFound();
+  const supplement = localizeSupplementData(raw, locale);
+  const s = getT(locale).supplement;
 
   const foodNote = supplement.defaultTiming.withFood
     ? supplement.defaultTiming.withFat
-      ? "With a meal containing fat"
-      : "With food"
-    : "Empty stomach ok";
+      ? s.withMealFat
+      : s.withFood
+    : s.emptyStomach;
 
-  const timeLabel = { morning: "Morning", afternoon: "Afternoon", evening: "Evening" }[supplement.defaultTiming.timeOfDay];
-  const ev = evidenceStyles[supplement.evidenceLevel];
+  const timeLabel = s.timeOfDay[supplement.defaultTiming.timeOfDay];
+  const ev = { dot: { high: "bg-[#4A7C59]", moderate: "bg-[#FFB326]", low: "bg-[#2E1B12]/20" }[supplement.evidenceLevel], label: s.evidence[supplement.evidenceLevel] };
 
   return (
     <div className="min-h-screen bg-[#FCFCF7] py-12 px-4">
@@ -46,7 +54,7 @@ export default async function SupplementPage({ params }: PageProps) {
 
         <div className="mb-8">
           <Link href="/results" className="text-xs tracking-widest uppercase text-[#9C8B78] hover:text-[#2E1B12] transition-colors">
-            ← Back to results
+            {s.backToResults}
           </Link>
         </div>
 
@@ -54,7 +62,7 @@ export default async function SupplementPage({ params }: PageProps) {
 
           {/* Header */}
           <div className="p-8 md:p-12 border-b border-[#2E1B12]/10">
-            <p className="text-xs tracking-widest uppercase text-[#9C8B78] mb-3">Sprout - Supplement</p>
+            <p className="text-xs tracking-widest uppercase text-[#9C8B78] mb-3">{s.kicker}</p>
             <div className="flex items-start justify-between gap-4 mb-4">
               <h1 className="text-3xl md:text-4xl font-normal text-[#2E1B12] leading-tight">
                 {supplement.name}
@@ -70,28 +78,28 @@ export default async function SupplementPage({ params }: PageProps) {
           {/* Quick facts */}
           <div className="grid grid-cols-3 divide-x divide-[#2E1B12]/10 border-b border-[#2E1B12]/10">
             <div className="p-6 md:p-8">
-              <p className="text-xs tracking-widest uppercase text-[#9C8B78] mb-2">Dosage</p>
+              <p className="text-xs tracking-widest uppercase text-[#9C8B78] mb-2">{s.dosage}</p>
               <p className="text-sm font-medium text-[#2E1B12]">{supplement.dosageRange}</p>
             </div>
             <div className="p-6 md:p-8">
-              <p className="text-xs tracking-widest uppercase text-[#9C8B78] mb-2">Best time</p>
+              <p className="text-xs tracking-widest uppercase text-[#9C8B78] mb-2">{s.bestTime}</p>
               <p className="text-sm font-medium text-[#2E1B12]">{timeLabel}</p>
             </div>
             <div className="p-6 md:p-8">
-              <p className="text-xs tracking-widest uppercase text-[#9C8B78] mb-2">With food</p>
+              <p className="text-xs tracking-widest uppercase text-[#9C8B78] mb-2">{s.withFoodLabel}</p>
               <p className="text-sm font-medium text-[#2E1B12]">{foodNote}</p>
             </div>
           </div>
 
           {/* Evidence summary */}
           <div className="p-8 md:p-12 border-b border-[#2E1B12]/10">
-            <p className="text-xs tracking-widest uppercase text-[#9C8B78] mb-4">Evidence Summary</p>
+            <p className="text-xs tracking-widest uppercase text-[#9C8B78] mb-4">{s.evidenceSummary}</p>
             <p className="text-sm text-[#2E1B12] leading-relaxed">{supplement.evidenceSummary}</p>
           </div>
 
           {/* Benefit chart */}
           <div className="p-8 md:p-12 border-b border-[#2E1B12]/10">
-            <p className="text-xs tracking-widest uppercase text-[#9C8B78] mb-8">Benefit Profile</p>
+            <p className="text-xs tracking-widest uppercase text-[#9C8B78] mb-8">{s.benefitProfile}</p>
             <BenefitRadarChart goals={supplement.goals} evidenceLevel={supplement.evidenceLevel} />
           </div>
 
@@ -99,7 +107,7 @@ export default async function SupplementPage({ params }: PageProps) {
           {supplement.cautionNote && (
             <div className="px-8 md:px-12 py-6 border-b border-[#2E1B12]/10">
               <div className="border-l-2 border-[#FFB326] pl-4">
-                <p className="text-xs tracking-widest uppercase text-[#FFB326] mb-2">Important Note</p>
+                <p className="text-xs tracking-widest uppercase text-[#FFB326] mb-2">{s.importantNote}</p>
                 <p className="text-sm text-[#9C8B78] leading-relaxed">{supplement.cautionNote}</p>
               </div>
             </div>
@@ -107,16 +115,16 @@ export default async function SupplementPage({ params }: PageProps) {
 
           {/* Interactions */}
           <div className="p-8 md:p-12 border-b border-[#2E1B12]/10">
-            <p className="text-xs tracking-widest uppercase text-[#9C8B78] mb-6">Interactions & Pairings</p>
+            <p className="text-xs tracking-widest uppercase text-[#9C8B78] mb-6">{s.interactions}</p>
             {supplement.pairWith.length === 0 && supplement.avoidWith.length === 0 && supplement.separateFrom.length === 0
-              ? <p className="text-sm text-[#9C8B78]">No significant interactions documented.</p>
+              ? <p className="text-sm text-[#9C8B78]">{s.noInteractions}</p>
               : (
                 <div className="space-y-4">
                   {supplement.pairWith.length > 0 && (
                     <div className="space-y-3">
                       {supplement.pairWith.map((p, i) => (
                         <div key={i} className="flex items-start gap-4">
-                          <span className="text-xs tracking-widest uppercase text-[#4A7C59] flex-shrink-0 w-12 mt-0.5">Pair</span>
+                          <span className="text-xs tracking-widest uppercase text-[#4A7C59] flex-shrink-0 w-12 mt-0.5">{s.pair}</span>
                           <div>
                             <p className="text-sm font-medium text-[#2E1B12]">{p.item}</p>
                             <p className="text-xs text-[#9C8B78] mt-0.5">{p.reason}</p>
@@ -129,10 +137,10 @@ export default async function SupplementPage({ params }: PageProps) {
                     <div className="space-y-3">
                       {supplement.separateFrom.map((p, i) => (
                         <div key={i} className="flex items-start gap-4">
-                          <span className="text-xs tracking-widest uppercase text-[#FFB326] flex-shrink-0 w-12 mt-0.5">Space</span>
+                          <span className="text-xs tracking-widest uppercase text-[#FFB326] flex-shrink-0 w-12 mt-0.5">{s.space}</span>
                           <div>
                             <p className="text-sm font-medium text-[#2E1B12]">
-                              {p.item}{p.separationHours ? ` (${p.separationHours}h apart)` : ""}
+                              {p.item}{p.separationHours ? ` ${s.hoursApart(p.separationHours)}` : ""}
                             </p>
                             <p className="text-xs text-[#9C8B78] mt-0.5">{p.reason}</p>
                           </div>
@@ -144,7 +152,7 @@ export default async function SupplementPage({ params }: PageProps) {
                     <div className="space-y-3">
                       {supplement.avoidWith.map((p, i) => (
                         <div key={i} className="flex items-start gap-4">
-                          <span className="text-xs tracking-widest uppercase text-red-400 flex-shrink-0 w-12 mt-0.5">Avoid</span>
+                          <span className="text-xs tracking-widest uppercase text-red-400 flex-shrink-0 w-12 mt-0.5">{s.avoid}</span>
                           <div>
                             <p className="text-sm font-medium text-[#2E1B12]">{p.item}</p>
                             <p className="text-xs text-[#9C8B78] mt-0.5">{p.reason}</p>
@@ -161,17 +169,17 @@ export default async function SupplementPage({ params }: PageProps) {
           {/* Diet relevance */}
           {supplement.dietRelevance && (supplement.dietRelevance.vegetarian || supplement.dietRelevance.vegan) && (
             <div className="p-8 md:p-12 border-b border-[#2E1B12]/10">
-              <p className="text-xs tracking-widest uppercase text-[#9C8B78] mb-4">Diet Considerations</p>
+              <p className="text-xs tracking-widest uppercase text-[#9C8B78] mb-4">{s.dietConsiderations}</p>
               <div className="space-y-3">
                 {supplement.dietRelevance.vegetarian && (
                   <div className="flex items-start gap-4">
-                    <span className="text-xs tracking-widest uppercase text-[#9C8B78] flex-shrink-0 w-20 mt-0.5">Vegetarian</span>
+                    <span className="text-xs tracking-widest uppercase text-[#9C8B78] flex-shrink-0 w-20 mt-0.5">{s.vegetarian}</span>
                     <p className="text-sm text-[#9C8B78]">{supplement.dietRelevance.vegetarian}</p>
                   </div>
                 )}
                 {supplement.dietRelevance.vegan && (
                   <div className="flex items-start gap-4">
-                    <span className="text-xs tracking-widest uppercase text-[#9C8B78] flex-shrink-0 w-20 mt-0.5">Vegan</span>
+                    <span className="text-xs tracking-widest uppercase text-[#9C8B78] flex-shrink-0 w-20 mt-0.5">{s.vegan}</span>
                     <p className="text-sm text-[#9C8B78]">{supplement.dietRelevance.vegan}</p>
                   </div>
                 )}
@@ -181,7 +189,7 @@ export default async function SupplementPage({ params }: PageProps) {
 
           {/* Citations */}
           <div className="p-8 md:p-12">
-            <p className="text-xs tracking-widest uppercase text-[#9C8B78] mb-6">Research Citations</p>
+            <p className="text-xs tracking-widest uppercase text-[#9C8B78] mb-6">{s.researchCitations}</p>
             <div className="space-y-4">
               {supplement.citations.map((citation, i) => {
                 const isTmgl = citation.url.includes("search.tmgl.org");
@@ -230,9 +238,9 @@ export default async function SupplementPage({ params }: PageProps) {
         </div>
 
         <div className="mt-8 flex items-center justify-between">
-          <p className="text-xs text-[#9C8B78]">Educational purposes only. Not medical advice.</p>
+          <p className="text-xs text-[#9C8B78]">{s.eduOnly}</p>
           <Link href="/results" className="text-xs tracking-widest uppercase text-[#9C8B78] hover:text-[#2E1B12] transition-colors">
-            ← Back to results
+            {s.backToResults}
           </Link>
         </div>
 
