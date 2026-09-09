@@ -427,7 +427,7 @@ export function WellnessProfileCard({ profile }: WellnessProfileCardProps) {
         </div>
 
         {/* Radar + overall score, centered */}
-        <div className="flex flex-col items-center gap-1 mb-4 md:mb-6">
+        <div className="flex flex-col items-center gap-4 md:gap-6 mb-4 md:mb-6">
           <div className="w-[230px] h-[230px] md:w-[320px] md:h-[320px]">
             <WellnessRadarChart scores={scores} progress={progress} dimLabels={w.dims} size={240} />
           </div>
