@@ -16,7 +16,7 @@ export default async function MethodologyPage() {
   const m = t.methodology;
 
   return (
-    <div className="min-h-screen bg-[#FCFCF7] py-12 px-4">
+    <div className="grow bg-[#FCFCF7] py-12 px-4">
       <div className="max-w-3xl mx-auto">
 
         <div className="mb-8">

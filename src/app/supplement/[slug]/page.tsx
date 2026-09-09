@@ -49,7 +49,7 @@ export default async function SupplementPage({ params }: PageProps) {
   const ev = { dot: { high: "bg-[#4A7C59]", moderate: "bg-[#FFB326]", low: "bg-[#2E1B12]/20" }[supplement.evidenceLevel], label: s.evidence[supplement.evidenceLevel] };
 
   return (
-    <div className="min-h-screen bg-[#FCFCF7] py-12 px-4">
+    <div className="grow bg-[#FCFCF7] py-12 px-4">
       <div className="max-w-3xl mx-auto">
 
         <div className="mb-8">

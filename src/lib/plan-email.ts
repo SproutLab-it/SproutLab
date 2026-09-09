@@ -18,6 +18,9 @@ const COPY: Record<
     sproutHeading: string;
     sproutIncludes: (n: number) => string;
     shop: (name: string) => string;
+    amazonHeading: string;
+    amazonDisclaimer: string;
+    viewOn: (brand: string) => string;
     disclaimer: string;
     footerNote: string;
     openPlan: string;
@@ -38,6 +41,9 @@ const COPY: Record<
     sproutHeading: "Sprout Lab formulas that match your plan",
     sproutIncludes: (n) => `Covers ${n} of your recommended ingredients`,
     shop: (name) => `Shop ${name}`,
+    amazonHeading: "Other supplements in your plan",
+    amazonDisclaimer: "Affiliate-free links. We earn nothing from these recommendations.",
+    viewOn: (brand) => `Find on Amazon.it (${brand})`,
     disclaimer:
       "This plan is educational and not medical advice. Talk to a doctor or pharmacist before starting any supplement, especially if you take medication, are pregnant or breastfeeding, or have a health condition.",
     footerNote: "Sprout - evidence-based supplement planner",
@@ -58,6 +64,9 @@ const COPY: Record<
     sproutHeading: "Formule Sprout Lab in linea con il tuo piano",
     sproutIncludes: (n) => `Copre ${n} degli ingredienti raccomandati`,
     shop: (name) => `Acquista ${name}`,
+    amazonHeading: "Altri integratori nel tuo piano",
+    amazonDisclaimer: "Link senza affiliazione. Non guadagniamo nulla da queste raccomandazioni.",
+    viewOn: (brand) => `Cerca su Amazon.it (${brand})`,
     disclaimer:
       "Questo piano ha scopo informativo e non è un consiglio medico. Parla con un medico o un farmacista prima di iniziare qualsiasi integratore, soprattutto se assumi farmaci, sei in gravidanza o allattamento, o hai una condizione di salute.",
     footerNote: "Sprout - pianificatore di integratori basato su evidenze",
@@ -70,6 +79,13 @@ export type SproutEmailProduct = {
   tagline: string;
   url: string;
   matchedCount: number;
+};
+
+export type AmazonEmailProduct = {
+  name: string;
+  brand: string;
+  shortDesc: string;
+  url: string;
 };
 
 const esc = (s: string) =>
@@ -85,10 +101,11 @@ function timingLine(s: SupplementRecommendation, c: (typeof COPY)[EmailLocale]):
 export function renderPlanEmail(opts: {
   schedule: ScheduleGroup[];
   sproutProducts: SproutEmailProduct[];
+  amazonProducts: AmazonEmailProduct[];
   locale: EmailLocale;
   plannerUrl: string;
 }): { subject: string; html: string } {
-  const { schedule, sproutProducts, locale, plannerUrl } = opts;
+  const { schedule, sproutProducts, amazonProducts, locale, plannerUrl } = opts;
   const c = COPY[locale];
 
   const brown = "#2E1B12";
@@ -144,6 +161,26 @@ export function renderPlanEmail(opts: {
       </td></tr>`
     : "";
 
+  const amazonHtml = amazonProducts.length
+    ? `
+      <tr><td style="padding-top:34px;">
+        <div style="font-size:16px;font-weight:700;color:${brown};margin-bottom:12px;">${esc(c.amazonHeading)}</div>
+        ${amazonProducts
+          .map(
+            (p) => `
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;background:#ffffff;border:1px solid rgba(46,27,18,0.12);margin-bottom:10px;">
+            <tr><td style="padding:16px 18px;">
+              <div style="font-size:15px;font-weight:600;color:${brown};">${esc(p.name)}</div>
+              <div style="font-size:13px;color:${muted};margin-top:2px;">${esc(p.brand)} · ${esc(p.shortDesc)}</div>
+              <a href="${esc(p.url)}" style="display:inline-block;margin-top:10px;font-size:13px;color:${brown};text-decoration:underline;">${esc(c.viewOn(p.brand))} →</a>
+            </td></tr>
+          </table>`
+          )
+          .join("")}
+        <div style="font-size:11px;color:${muted};margin-top:4px;">${esc(c.amazonDisclaimer)}</div>
+      </td></tr>`
+    : "";
+
   const html = `<!doctype html>
 <html lang="${locale}">
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(c.subject)}</title></head>
@@ -162,6 +199,7 @@ export function renderPlanEmail(opts: {
           <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
             ${scheduleHtml}
             ${sproutHtml}
+            ${amazonHtml}
           </td></tr>
         <tr><td style="padding:28px 32px 32px;">
           <a href="${esc(plannerUrl)}" style="display:inline-block;background:${amber};color:${brown};font-size:14px;font-weight:600;text-decoration:none;padding:12px 22px;border-radius:999px;">${esc(c.openPlan)} →</a>

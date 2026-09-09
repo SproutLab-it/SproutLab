@@ -31,7 +31,7 @@ export default async function RootLayout({
       <body className="antialiased min-h-screen flex flex-col">
         <IframeResizer />
         <LocaleProvider locale={locale}>
-          <main className="flex-1">{children}</main>
+          <main className="flex-1 flex flex-col">{children}</main>
           <Disclaimer variant="footer" />
         </LocaleProvider>
       </body>

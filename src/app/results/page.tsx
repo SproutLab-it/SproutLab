@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -8,34 +8,7 @@ import { ScheduleView, WellnessProfileCard, useLocale } from "@/components";
 import { generateRecommendations, groupBySchedule, SPROUT_PRODUCT_MATCH_SLUGS } from "@/lib/recommendation-engine";
 import { UserProfile, ScheduleGroup, SupplementRecommendation } from "@/types";
 import { getT } from "@/lib/i18n";
-
-// Links point to amazon.it (Amazon Italia) search results. The specific US
-// ASINs for these brands are frequently not listed on the Italian marketplace,
-// so a brand + product search reliably lands on relevant Italian listings.
-const amazonItSearch = (query: string) =>
-  `https://www.amazon.it/s?k=${encodeURIComponent(query)}`;
-
-type AmazonProduct = { brand: string; shortDesc: string; shortDescIt: string; url: string };
-const AMAZON_PRODUCTS: Record<string, AmazonProduct> = {
-  "omega-3":    { brand: "Nordic Naturals",    shortDesc: "Ultimate Omega · 1280mg EPA/DHA",             shortDescIt: "Ultimate Omega · 1280mg EPA/DHA",                  url: amazonItSearch("Nordic Naturals Ultimate Omega EPA DHA") },
-  "vitamin-d3": { brand: "NatureWise",          shortDesc: "Vitamin D3 5000 IU · in olive oil",           shortDescIt: "Vitamina D3 5000 UI · in olio d'oliva",            url: amazonItSearch("NatureWise vitamina D3 5000 IU") },
-  "vitamin-b12":{ brand: "Jarrow Formulas",     shortDesc: "Methylcobalamin 1000mcg · chewable",          shortDescIt: "Metilcobalamina 1000mcg · masticabile",           url: amazonItSearch("Jarrow Formulas metilcobalamina B12 1000 mcg") },
-  "vitamin-c":  { brand: "NOW Foods",           shortDesc: "Vitamin C-1000 + Bioflavonoids · 250 caps",   shortDescIt: "Vitamina C-1000 + bioflavonoidi · 250 capsule",    url: amazonItSearch("NOW Foods vitamina C 1000 bioflavonoidi") },
-  "creatine":   { brand: "Optimum Nutrition",   shortDesc: "Micronized Creatine Monohydrate · 600g",      shortDescIt: "Creatina monoidrato micronizzata · 600g",         url: amazonItSearch("Optimum Nutrition creatina monoidrato micronizzata") },
-  "melatonin":  { brand: "Nature Made",         shortDesc: "Melatonin 5mg · drug-free sleep aid",         shortDescIt: "Melatonina 5mg · aiuto al sonno senza farmaci",    url: amazonItSearch("Nature Made melatonina 5 mg") },
-  "iron":       { brand: "Garden of Life",      shortDesc: "Vitamin Code Healthy Blood · 60 caps",        shortDescIt: "Vitamin Code Healthy Blood · 60 capsule",          url: amazonItSearch("Garden of Life Vitamin Code ferro Healthy Blood") },
-  "vitamin-k2": { brand: "Thorne",              shortDesc: "Vitamin K Complex K1 + K2 MK-4 & MK-7",      shortDescIt: "Vitamina K Complex K1 + K2 MK-4 e MK-7",           url: amazonItSearch("Thorne vitamina K2 complex MK-7 MK-4") },
-  "l-theanine": { brand: "NOW Foods",           shortDesc: "L-Theanine 200mg + Inositol · 120 caps",      shortDescIt: "L-Teanina 200mg + inositolo · 120 capsule",        url: amazonItSearch("NOW Foods L-teanina 200 mg inositolo") },
-  "coq10":      { brand: "Doctor's Best",       shortDesc: "CoQ10 100mg + BioPerine · 120 softgels",      shortDescIt: "CoQ10 100mg + BioPerine · 120 softgel",            url: amazonItSearch("Doctor's Best CoQ10 100 mg BioPerine") },
-  "vitamin-a":  { brand: "NOW Foods",           shortDesc: "Vitamin A 10,000 IU · 100 softgels",          shortDescIt: "Vitamina A 10.000 UI · 100 softgel",              url: amazonItSearch("NOW Foods vitamina A 10000 IU") },
-  "vitamin-e":  { brand: "NOW Foods",           shortDesc: "Vitamin E-400 IU Mixed Tocopherols · 100ct",  shortDescIt: "Vitamina E-400 UI tocoferoli misti · 100 pz",      url: amazonItSearch("NOW Foods vitamina E 400 IU tocoferoli misti") },
-  "biotin":     { brand: "NOW Foods",           shortDesc: "Biotin 5000mcg · 120 veg capsules",           shortDescIt: "Biotina 5000mcg · 120 capsule vegetali",           url: amazonItSearch("NOW Foods biotina 5000 mcg") },
-  "probiotics": { brand: "Garden of Life",      shortDesc: "Dr. Formulated Once Daily · 50B CFU",         shortDescIt: "Dr. Formulated una volta al giorno · 50 mld CFU",  url: amazonItSearch("Garden of Life Dr Formulated probiotici 50 miliardi") },
-  "collagen":   { brand: "Sports Research",     shortDesc: "Collagen Peptides · Hydrolyzed Type 1 & 3",   shortDescIt: "Peptidi di collagene · idrolizzato Tipo 1 e 3",    url: amazonItSearch("Sports Research peptidi di collagene idrolizzato") },
-  "turmeric":   { brand: "Doctor's Best",       shortDesc: "Curcumin C3 Complex + BioPerine · 1000mg",    shortDescIt: "Curcumina C3 Complex + BioPerine · 1000mg",        url: amazonItSearch("Doctor's Best curcumina C3 Complex BioPerine") },
-  "nac":        { brand: "NOW Foods",           shortDesc: "NAC N-Acetyl Cysteine 1000mg · 120 tablets",  shortDescIt: "NAC N-acetil cisteina 1000mg · 120 compresse",     url: amazonItSearch("NOW Foods NAC N-acetil cisteina 1000 mg") },
-  "spirulina":  { brand: "Nutrex Hawaii",       shortDesc: "Pure Hawaiian Spirulina · 500mg · 400 tablets", shortDescIt: "Spirulina hawaiana pura · 500mg · 400 compresse", url: amazonItSearch("Nutrex Hawaii spirulina hawaiana 500 mg") },
-};
+import { AMAZON_PRODUCTS } from "@/lib/amazon-products";
 
 const INGREDIENT_LABEL_IT: Record<string, string> = {
   cordyceps: "Cordyceps", ashwagandha: "Ashwagandha", reishi: "Reishi",
@@ -92,37 +65,58 @@ const SPROUTLAB_PRODUCTS = [
   },
 ];
 
+// Read the intake profile straight from sessionStorage during render instead of
+// copying it into state inside an effect. useSyncExternalStore gives a stable,
+// hydration-safe read: the server snapshot is null / not-mounted, the client
+// swaps in the real values on the post-hydration re-render.
+const noopSubscribe = () => () => {};
+const readStoredProfile = () =>
+  typeof window === "undefined" ? null : window.sessionStorage.getItem("intakeProfile");
+const nullSnapshot = () => null;
+const trueSnapshot = () => true;
+const falseSnapshot = () => false;
+
 export default function ResultsPage() {
   const router = useRouter();
   const locale = useLocale();
   const t = getT(locale);
   const tr = t.results;
 
-  const [schedule, setSchedule] = useState<ScheduleGroup[]>([]);
-  const [recommendations, setRecommendations] = useState<SupplementRecommendation[]>([]);
-  const [profile, setProfile] = useState<UserProfile | null>(null);
-  const [loading, setLoading] = useState(true);
   const [email, setEmail] = useState("");
   const [emailState, setEmailState] = useState<"idle" | "sending" | "sent" | "error">("idle");
 
-  useEffect(() => {
-    const storedProfile = sessionStorage.getItem("intakeProfile");
-    if (!storedProfile) { router.push("/intake"); return; }
-    try {
-      const parsedProfile: UserProfile = JSON.parse(storedProfile);
-      setProfile(parsedProfile);
-      const recs = generateRecommendations(parsedProfile, locale);
-      setRecommendations(recs);
-      setSchedule(groupBySchedule(recs));
-    } catch {
-      router.push("/intake"); return;
-    }
-    setLoading(false);
-  }, [router, locale]);
+  // false during SSR and the first (hydration) client render, true afterwards.
+  const mounted = useSyncExternalStore(noopSubscribe, trueSnapshot, falseSnapshot);
+  const storedProfile = useSyncExternalStore(noopSubscribe, readStoredProfile, nullSnapshot);
 
-  if (loading) {
+  const profile = useMemo<UserProfile | null>(() => {
+    if (!storedProfile) return null;
+    try {
+      return JSON.parse(storedProfile) as UserProfile;
+    } catch {
+      return null;
+    }
+  }, [storedProfile]);
+
+  const recommendations = useMemo<SupplementRecommendation[]>(
+    () => (profile ? generateRecommendations(profile, locale) : []),
+    [profile, locale],
+  );
+  const schedule = useMemo<ScheduleGroup[]>(
+    () => groupBySchedule(recommendations),
+    [recommendations],
+  );
+
+  // Redirect back to the questionnaire when there is no usable stored profile.
+  // Gated on `mounted` so it only runs once the client snapshot is in, never
+  // during SSR/hydration when `storedProfile` is still the null server snapshot.
+  useEffect(() => {
+    if (mounted && !profile) router.push("/intake");
+  }, [mounted, profile, router]);
+
+  if (!mounted || !profile) {
     return (
-      <div className="min-h-screen bg-[#FCFCF7] flex items-center justify-center">
+      <div className="grow bg-[#FCFCF7] flex items-center justify-center">
         <div className="text-center">
           <div className="inline-block w-6 h-6 border-2 border-[#FFB326] border-t-transparent rounded-full animate-spin mb-4" />
           <p className="text-sm text-[#9C8B78] tracking-wide">{tr.loading}</p>
@@ -161,7 +155,7 @@ export default function ResultsPage() {
   );
 
   return (
-    <div className="min-h-screen bg-[#FCFCF7] py-12 px-4">
+    <div className="grow bg-[#FCFCF7] py-12 px-4">
       <div className="max-w-4xl mx-auto">
 
         <div className="mb-8">

@@ -11,7 +11,7 @@ export default async function Home() {
   const h = t.home;
 
   return (
-    <div className="flex flex-col">
+    <div className="grow flex flex-col">
       <section className="relative min-h-[600px] md:min-h-[720px] lg:min-h-[820px] w-full overflow-hidden">
         <Image src="/hero-bg.jpg" alt="" fill priority className="object-cover" />
         {/* Bottom-up gradient so the photo stays crisp and only darkens behind the text */}

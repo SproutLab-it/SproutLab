@@ -6,7 +6,8 @@ import {
   validateProfile,
   SPROUT_PRODUCT_MATCH_SLUGS,
 } from "@/lib/recommendation-engine";
-import { renderPlanEmail, SproutEmailProduct } from "@/lib/plan-email";
+import { renderPlanEmail, SproutEmailProduct, AmazonEmailProduct } from "@/lib/plan-email";
+import { AMAZON_PRODUCTS } from "@/lib/amazon-products";
 
 export const runtime = "nodejs";
 
@@ -86,10 +87,26 @@ export async function POST(req: NextRequest) {
     })
     .filter((p): p is SproutEmailProduct => p !== null && p.matchedCount >= SPROUT_MIN_MATCH);
 
+  // Non-Sprout recommendations that have an Amazon.it listing, mirroring the
+  // "other supplements" grid in src/app/results/page.tsx.
+  const sproutSlugs = new Set(Object.values(SPROUT_PRODUCT_MATCH_SLUGS).flat());
+  const amazonProducts: AmazonEmailProduct[] = recommendations
+    .filter((r) => !sproutSlugs.has(r.slug) && AMAZON_PRODUCTS[r.slug])
+    .map((r) => {
+      const meta = AMAZON_PRODUCTS[r.slug];
+      return {
+        name: r.name,
+        brand: meta.brand,
+        shortDesc: emailLocale === "it" ? meta.shortDescIt : meta.shortDesc,
+        url: meta.url,
+      };
+    });
+
   const plannerUrl = new URL(req.url).origin;
   const { subject, html } = renderPlanEmail({
     schedule,
     sproutProducts,
+    amazonProducts,
     locale: emailLocale,
     plannerUrl,
   });
