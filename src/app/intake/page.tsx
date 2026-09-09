@@ -22,6 +22,7 @@ import {
 } from "@/types";
 import { getAllSupplements } from "@/lib/recommendation-engine";
 import { getT } from "@/lib/i18n";
+import { SUPPLEMENT_IT } from "@/lib/supplement-i18n";
 
 const TOTAL_STEPS = 10;
 
@@ -530,7 +531,9 @@ export default function IntakePage() {
                         : "border-[#2E1B12]/20 bg-white text-[#2E1B12] hover:border-[#2E1B12]"
                     }`}
                   >
-                    {supplement.name}
+                    {locale === "it"
+                      ? SUPPLEMENT_IT[supplement.slug]?.name ?? supplement.name
+                      : supplement.name}
                   </button>
                 ))}
               </div>
