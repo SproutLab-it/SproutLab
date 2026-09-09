@@ -67,7 +67,7 @@ export async function POST(req: NextRequest) {
   const emailLocale = locale === "it" ? "it" : "en";
 
   // Recompute the plan on the server so the email content can't be tampered with.
-  const recommendations = generateRecommendations(profile as UserProfile);
+  const recommendations = generateRecommendations(profile as UserProfile, emailLocale);
   const schedule = groupBySchedule(recommendations);
   const recSlugs = new Set(recommendations.map((r) => r.slug));
 

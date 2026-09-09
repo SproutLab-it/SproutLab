@@ -3,6 +3,8 @@
 import { useEffect, useRef, useState } from "react";
 import { toBlob } from "html-to-image";
 import { UserProfile } from "@/types";
+import { getT } from "@/lib/i18n";
+import { useLocale } from "./LocaleProvider";
 
 type WellnessScores = {
   energy: number;
@@ -143,7 +145,7 @@ function generateInsights(profile: UserProfile, scores: WellnessScores): string[
   return out.slice(0, 3);
 }
 
-function WellnessRadarChart({ scores, progress, size = 240 }: { scores: WellnessScores; progress: number; size?: number }) {
+function WellnessRadarChart({ scores, progress, dimLabels, size = 240 }: { scores: WellnessScores; progress: number; dimLabels: Record<string, string>; size?: number }) {
   const cx = size / 2;
   const cy = size / 2;
   const maxR = size * 0.325;
@@ -203,7 +205,7 @@ function WellnessRadarChart({ scores, progress, size = 240 }: { scores: Wellness
             textAnchor={textAnchor(i)} dominantBaseline={dominantBaseline(i)}
             fontSize={8} letterSpacing="0.1em" fill="rgba(252,252,247,0.92)"
             fontFamily="ABCMonumentGrotesk, Arial, sans-serif">
-            {DIM_LABELS[dim].toUpperCase()}
+            {(dimLabels[dim] ?? DIM_LABELS[dim]).toUpperCase()}
           </text>
         );
       })}
@@ -224,8 +226,10 @@ export function WellnessProfileCard({ profile }: WellnessProfileCardProps) {
   const bgImgRef = useRef<HTMLImageElement>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
 
+  const w = getT(useLocale()).results.wellness;
   const scores = computeWellnessScores(profile);
   const archetype = getArchetype(profile);
+  const archetypeTagline = w.taglines[archetype.name] ?? archetype.tagline;
   const insights = generateInsights(profile, scores);
   const overall = Math.round(Object.values(scores).reduce((a, b) => a + b, 0) / DIMENSIONS.length);
 
@@ -369,12 +373,10 @@ export function WellnessProfileCard({ profile }: WellnessProfileCardProps) {
   };
 
   const chips = [
-    `${profile.age}y`,
-    profile.diet,
-    profile.exerciseFrequency
-      ? ({ sedentary: "sedentary", light: "light activity", moderate: "active", intense: "athlete" })[profile.exerciseFrequency]
-      : null,
-    profile.sleepHours ? `${profile.sleepHours}h sleep` : null,
+    w.chipAge(profile.age),
+    w.chipDiet[profile.diet] ?? profile.diet,
+    profile.exerciseFrequency ? w.chipActivity[profile.exerciseFrequency] : null,
+    profile.sleepHours ? w.chipSleep(profile.sleepHours) : null,
   ].filter(Boolean) as string[];
 
   return (
@@ -402,18 +404,18 @@ export function WellnessProfileCard({ profile }: WellnessProfileCardProps) {
       <div style={{ position: "relative", zIndex: 2 }}>
       {/* Top bar */}
       <div className="border-b border-white/[0.08] px-4 md:px-8 py-3 flex items-center justify-between">
-        <p className="text-[10px] tracking-[0.22em] uppercase text-[#FFB326]/80">Sprout · Wellness Profile</p>
+        <p className="text-[10px] tracking-[0.22em] uppercase text-[#FFB326]/80">{w.topbar}</p>
         <p className="text-[10px] tracking-widest text-white/40">2026</p>
       </div>
 
       <div className="px-4 md:px-12 pt-4 md:pt-6 pb-6 md:pb-10">
         {/* Archetype block, left aligned, near the top */}
         <div className="mb-6 md:mb-10">
-          <p className="text-[9px] tracking-[0.2em] uppercase text-[#FFB326]/90 mb-1.5 md:mb-3">Your archetype</p>
+          <p className="text-[9px] tracking-[0.2em] uppercase text-[#FFB326]/90 mb-1.5 md:mb-3">{w.yourArchetype}</p>
           <h2 className="text-lg md:text-[38px] font-normal text-[#FFB326] leading-tight mb-1.5 md:mb-3 tracking-tight">
             {archetype.name}
           </h2>
-          <p className="text-xs md:text-sm text-white/85 mb-3 md:mb-5 leading-relaxed">{archetype.tagline}</p>
+          <p className="text-xs md:text-sm text-white/85 mb-3 md:mb-5 leading-relaxed">{archetypeTagline}</p>
 
           <div className="flex flex-wrap gap-1.5">
             {chips.map((chip) => (
@@ -427,13 +429,13 @@ export function WellnessProfileCard({ profile }: WellnessProfileCardProps) {
         {/* Radar + overall score, centered */}
         <div className="flex flex-col items-center gap-1 mb-4 md:mb-6">
           <div className="w-[230px] h-[230px] md:w-[320px] md:h-[320px]">
-            <WellnessRadarChart scores={scores} progress={progress} size={240} />
+            <WellnessRadarChart scores={scores} progress={progress} dimLabels={w.dims} size={240} />
           </div>
           <div className="text-center">
             <p className="text-3xl md:text-[46px] font-light text-white leading-none tabular-nums">
               {Math.round(overall * progress)}
             </p>
-            <p className="text-[8px] tracking-[0.24em] uppercase text-white/40 mt-1">Overall</p>
+            <p className="text-[8px] tracking-[0.24em] uppercase text-white/40 mt-1">{w.overall}</p>
           </div>
         </div>
 
@@ -445,7 +447,7 @@ export function WellnessProfileCard({ profile }: WellnessProfileCardProps) {
             disabled={shareState === "generating"}
             className="text-[10px] md:text-xs font-medium tracking-[0.16em] uppercase bg-[#FFB326] text-[#2E1B12] rounded-full px-5 py-2.5 md:px-6 md:py-3 shadow-lg shadow-[#FFB326]/25 hover:bg-[#e6a020] transition-colors disabled:opacity-50"
           >
-            {shareState === "generating" ? "Generating…" : shareState === "done" ? "Saved ✓" : "Share your profile ↗"}
+            {shareState === "generating" ? w.sharing : shareState === "done" ? w.shared : w.share}
           </button>
         </div>
       </div>

@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import { SupplementRecommendation } from "@/types";
+import { getT } from "@/lib/i18n";
+import { useLocale } from "./LocaleProvider";
 import { PairingList } from "./PairingList";
 
 interface SupplementCardProps {
@@ -9,18 +11,18 @@ interface SupplementCardProps {
   showDetails?: boolean;
 }
 
-const evidenceStyles = {
-  high: { dot: "bg-[#4A7C59]", label: "High evidence" },
-  moderate: { dot: "bg-[#FFB326]", label: "Moderate evidence" },
-  low: { dot: "bg-[#2E1B12]/20", label: "Low evidence" },
+const evidenceDot = {
+  high: "bg-[#4A7C59]",
+  moderate: "bg-[#FFB326]",
+  low: "bg-[#2E1B12]/20",
 };
 
 export function SupplementCard({ supplement, showDetails = true }: SupplementCardProps) {
-  const foodNote = supplement.timing.withFood
-    ? supplement.timing.withFat ? "With food + fat" : "With food"
-    : "Empty stomach ok";
+  const p = getT(useLocale()).results.plan;
 
-  const ev = evidenceStyles[supplement.evidenceLevel];
+  const foodNote = supplement.timing.withFood
+    ? supplement.timing.withFat ? p.withFoodFat : p.withFood
+    : p.emptyStomach;
 
   return (
     <div className="border border-[#2E1B12]/10 bg-white p-5">
@@ -33,8 +35,8 @@ export function SupplementCard({ supplement, showDetails = true }: SupplementCar
           {supplement.name}
         </Link>
         <div className="flex items-center gap-1.5 flex-shrink-0 mt-0.5">
-          <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${ev.dot}`} />
-          <span className="text-xs text-[#9C8B78]">{ev.label}</span>
+          <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${evidenceDot[supplement.evidenceLevel]}`} />
+          <span className="text-xs text-[#9C8B78]">{p.evidence[supplement.evidenceLevel]}</span>
         </div>
       </div>
 
@@ -50,7 +52,7 @@ export function SupplementCard({ supplement, showDetails = true }: SupplementCar
         {supplement.alreadyTaking && (
           <>
             <span className="text-[#2E1B12]/20">·</span>
-            <span className="text-xs text-[#FFB326]">Already taking</span>
+            <span className="text-xs text-[#FFB326]">{p.alreadyTaking}</span>
           </>
         )}
       </div>
@@ -64,7 +66,7 @@ export function SupplementCard({ supplement, showDetails = true }: SupplementCar
       {showDetails && supplement.cautionNote && (
         <div className="mb-3 px-3 py-2 border-l-2 border-[#FFB326] bg-[#FCFCF7]">
           <p className="text-xs text-[#9C8B78]">
-            <span className="font-medium text-[#2E1B12]">Note: </span>
+            <span className="font-medium text-[#2E1B12]">{p.note}: </span>
             {supplement.cautionNote}
           </p>
         </div>
@@ -83,11 +85,11 @@ export function SupplementCard({ supplement, showDetails = true }: SupplementCar
       <div className="mt-3 pt-3 border-t border-[#2E1B12]/10 flex items-center justify-between">
         {showDetails && supplement.citations.length > 0 ? (
           <span className="text-xs text-[#9C8B78]">
-            {supplement.citations.length} citation{supplement.citations.length !== 1 ? "s" : ""}
+            {p.citations(supplement.citations.length)}
           </span>
         ) : <span />}
         <Link href={`/supplement/${supplement.slug}`} className="text-xs text-[#FFB326] hover:underline">
-          View details →
+          {p.viewDetails}
         </Link>
       </div>
     </div>

@@ -8,6 +8,8 @@ import {
   TimeOfDay,
 } from "@/types";
 import supplementsData from "@/data/supplements.json";
+import type { Locale } from "@/lib/i18n";
+import { localizeSupplementText } from "@/lib/supplement-i18n";
 
 const goalSupplementMap: Record<Goal, string[]> = {
   energy: ["vitamin-d3", "vitamin-b12", "iron", "creatine", "coq10", "rhodiola", "magnesium", "cordyceps", "vitamin-b6"],
@@ -189,7 +191,10 @@ function getLifestyleAdjustments(profile: UserProfile): {
   return { additionalSupplements, priorityBoosts, lifestyleNotes };
 }
 
-export function generateRecommendations(profile: UserProfile): SupplementRecommendation[] {
+export function generateRecommendations(
+  profile: UserProfile,
+  locale: Locale = "en",
+): SupplementRecommendation[] {
   const supplements = getSupplements();
   const recommendedSlugs = new Set<string>();
   const slugToGoals = new Map<string, Goal[]>();
@@ -308,10 +313,15 @@ export function generateRecommendations(profile: UserProfile): SupplementRecomme
     const alreadyTaking = profile.currentSupplements.includes(slug);
     const notes = lifestyleNotes.get(slug) || [];
 
+    const localized = localizeSupplementText(
+      { slug: supplement.slug, name: supplement.name, dosage: supplement.dosageRange },
+      locale,
+    );
+
     recommendations.push({
-      name: supplement.name,
+      name: localized.name,
       slug: supplement.slug,
-      dosage: supplement.dosageRange,
+      dosage: localized.dosage,
       timing: { ...supplement.defaultTiming },
       pairWith: supplement.pairWith,
       avoidWith: supplement.avoidWith,
