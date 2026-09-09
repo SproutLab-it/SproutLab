@@ -2,34 +2,33 @@ import { NextRequest, NextResponse } from "next/server";
 
 export const runtime = "nodejs";
 
-function detectLocale(acceptLanguage: string): "en" | "it" {
-  if (!acceptLanguage) return "en";
-  const langs = acceptLanguage
-    .split(",")
-    .map((lang) => {
-      const parts = lang.trim().split(";q=");
-      return { code: parts[0].trim().toLowerCase(), q: parts[1] ? parseFloat(parts[1]) : 1.0 };
-    })
-    .sort((a, b) => b.q - a.q);
-  return langs[0]?.code.startsWith("it") ? "it" : "en";
-}
+const SUPPORTED = ["en", "it"] as const;
+type Locale = (typeof SUPPORTED)[number];
+
+const isLocale = (v: string | null | undefined): v is Locale =>
+  v === "en" || v === "it";
 
 export function middleware(request: NextRequest) {
-  const existing = request.cookies.get("locale")?.value;
-  const locale =
-    existing === "en" || existing === "it"
-      ? existing
-      : detectLocale(request.headers.get("accept-language") || "");
+  // Language is decided by the visitor's country: Italy gets Italian,
+  // every other country (and any request where the country is unknown,
+  // e.g. local dev) gets English.
+  //
+  // An explicit ?lang=en / ?lang=it wins and is remembered in a cookie,
+  // so the English version can be previewed from Italy and shared.
+  const param = request.nextUrl.searchParams.get("lang");
+  const cookie = request.cookies.get("lang")?.value;
+  const override = isLocale(param) ? param : isLocale(cookie) ? cookie : null;
 
-  // Inject x-locale into the request so server components can read it on the very first visit,
-  // before the browser has sent the cookie back.
+  const country = request.headers.get("x-vercel-ip-country");
+  const locale: Locale = override ?? (country === "IT" ? "it" : "en");
+
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set("x-locale", locale);
 
   const response = NextResponse.next({ request: { headers: requestHeaders } });
 
-  if (!existing) {
-    response.cookies.set("locale", locale, { maxAge: 60 * 60 * 24 * 30, path: "/" });
+  if (isLocale(param)) {
+    response.cookies.set("lang", param, { maxAge: 60 * 60 * 24 * 30, path: "/" });
   }
 
   return response;
