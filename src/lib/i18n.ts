@@ -22,8 +22,8 @@ const en = {
         desc: "Learn which supplements work better together and which ones to separate for best results.",
       },
       evidence: {
-        label: "Evidence-Based",
-        desc: "Every recommendation includes evidence ratings and citations to peer-reviewed research.",
+        label: "Based on scientific research",
+        desc: "We draw on real medical databases (PubMed, Cochrane, NIH), with citations and an assigned evidence level for every supplement.",
       },
     },
     howItWorks: {
@@ -443,8 +443,8 @@ const it: typeof en = {
         desc: "Scopri quali integratori funzionano meglio insieme e quali separare per ottenere i migliori risultati.",
       },
       evidence: {
-        label: "Basato su Evidenze",
-        desc: "Ogni raccomandazione include valutazioni delle evidenze e citazioni da ricerche scientifiche.",
+        label: "Basato su ricerche scientifiche",
+        desc: "Ci appoggiamo a database medici reali (PubMed, Cochrane, NIH), con citazioni e un livello di evidenza assegnato per ogni integratore.",
       },
     },
     howItWorks: {
