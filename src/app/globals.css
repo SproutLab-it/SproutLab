@@ -44,6 +44,21 @@ body {
   font-family: 'ABCMonumentGrotesk', Arial, Helvetica, sans-serif;
 }
 
+/* Inside the WordPress iframe the height must be content-driven: neutralise the
+   full-viewport sizing so the frame can shrink-wrap the content and the host
+   footer sits right below it. Mirrors the server-side check in layout.tsx. */
+html[data-embedded] body {
+  min-height: 0;
+}
+
+html[data-embedded] main {
+  flex: 0 1 auto;
+}
+
+html[data-embedded] main > * {
+  flex-grow: 0;
+}
+
 
 input[type="number"]::-webkit-inner-spin-button,
 input[type="number"]::-webkit-outer-spin-button {

@@ -9,6 +9,11 @@ export function IframeResizer() {
   useEffect(() => {
     if (window.self === window.top) return;
 
+    // Belt-and-suspenders alongside the server-side Sec-Fetch-Dest check in
+    // layout.tsx: mark the document as embedded so globals.css can drop the
+    // full-viewport min-height/flex sizing and let the height be content-driven.
+    document.documentElement.setAttribute("data-embedded", "");
+
     const send = () => {
       const height = Math.max(
         document.documentElement.scrollHeight,
