@@ -133,5 +133,37 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "send_failed" }, { status: 502 });
   }
 
+  // Internal copy for the team, sent as its own separate email (not cc/bcc)
+  // so the user's copy never reveals that admin also received one. Best
+  // effort only — a failure here must not affect the user-facing response.
+  const adminEmail = process.env.ADMIN_NOTIFY_EMAIL || "admin@sproutlab.it";
+  const adminHtml = html.replace(
+    /<body([^>]*)>/,
+    `<body$1><div style="background:#2E1B12;color:#FCFCF7;padding:12px 24px;font-family:sans-serif;font-size:13px;">Piano generato per: ${email.trim()}</div>`,
+  );
+
+  try {
+    const adminRes = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        from,
+        to: [adminEmail],
+        subject: `[MyPlan] ${subject} — ${email.trim()}`,
+        html: adminHtml,
+      }),
+    });
+
+    if (!adminRes.ok) {
+      const detail = await adminRes.text().catch(() => "");
+      console.error(`[send-plan] admin copy: Resend responded ${adminRes.status}: ${detail}`);
+    }
+  } catch (err) {
+    console.error("[send-plan] admin copy: request to Resend failed", err);
+  }
+
   return NextResponse.json({ ok: true });
 }
