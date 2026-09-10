@@ -12,13 +12,15 @@ export default async function Home() {
 
   return (
     <div className="grow flex flex-col">
-      <section className="relative min-h-[600px] md:min-h-[720px] lg:min-h-[820px] w-full overflow-hidden">
+      <section className="relative flex flex-col justify-end min-h-[600px] md:min-h-[720px] lg:min-h-[820px] w-full overflow-hidden">
         <Image src="/hero-bg.jpg" alt="" fill priority className="object-cover" />
         {/* Bottom-up gradient so the photo stays crisp and only darkens behind the text */}
         <div className="absolute inset-0 bg-gradient-to-t from-[#2E1B12]/85 via-[#2E1B12]/10 to-transparent" />
-        <div className="absolute inset-x-0 bottom-0 px-6 md:px-16 pb-14 md:pb-20">
+        {/* Normal flow (not absolutely positioned) so the section grows taller than
+            min-h when wrapped text needs more room, instead of clipping at the top. */}
+        <div className="relative z-10 px-6 md:px-16 pt-24 pb-14 md:pb-20">
           <div className="max-w-3xl">
-            <h1 className="text-5xl md:text-7xl lg:text-8xl font-normal text-white uppercase leading-[0.95] mb-6" style={{ letterSpacing: "-0.04em" }}>
+            <h1 className="text-4xl md:text-7xl lg:text-8xl font-normal text-white uppercase leading-[0.95] mb-6" style={{ letterSpacing: "-0.04em" }}>
               {h.hero.title[0]}<br />{h.hero.title[1]}
             </h1>
             <p className="text-base md:text-lg text-white/85 max-w-xl mb-8 leading-relaxed">
