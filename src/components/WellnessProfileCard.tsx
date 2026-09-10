@@ -93,28 +93,28 @@ function computeWellnessScores(profile: UserProfile): WellnessScores {
   };
 }
 
-function getArchetype(profile: UserProfile): { name: string; tagline: string; image: string } {
+function getArchetype(profile: UserProfile): { name: string; descriptor: string; tagline: string; image: string } {
   const goals = new Set(profile.goals);
   const isHighStress = profile.stressLevel === "high" || profile.jobStress === "high";
   const isAthlete = profile.exerciseFrequency === "intense" || profile.exerciseIntensity?.includes("strength");
 
   if (goals.has("muscle") && isAthlete)
-    return { name: "THE IRON PROTOCOL", tagline: "Built for performance. Engineered to recover.", image: "/archetypes/iron-protocol.jpg" };
+    return { name: "HERACLES", descriptor: "Superhuman Strength", tagline: "Power built in. Recovery built for it.", image: "/archetypes/iron-protocol.jpg" };
   if (goals.has("focus") && profile.caffeineIntake === "high")
-    return { name: "THE WIRED OPTIMIZER", tagline: "Caffeine runs the engine. Now let's tune it.", image: "/archetypes/wired-optimizer.jpg" };
+    return { name: "HERMES", descriptor: "Speed & Sharp Focus", tagline: "Quick mind. Steadier fuel.", image: "/archetypes/wired-optimizer.jpg" };
   if (goals.has("sleep") && (profile.sleepQuality === "poor" || (profile.sleepHours !== undefined && profile.sleepHours < 6)))
-    return { name: "THE SLEEP DEBT PROJECT", tagline: "Recovery is where the real gains happen.", image: "/archetypes/sleep-debt-project.jpg" };
+    return { name: "HYPNOS", descriptor: "God of Sleep", tagline: "The gains you can't see, until you sleep.", image: "/archetypes/sleep-debt-project.jpg" };
   if (goals.has("longevity") && !isHighStress)
-    return { name: "THE LONGEVITY PLAY", tagline: "Not just living longer, living better.", image: "/archetypes/longevity-play.jpg" };
+    return { name: "CHRONOS", descriptor: "Master of Time", tagline: "Playing the long game, on purpose.", image: "/archetypes/longevity-play.jpg" };
   if (isHighStress || goals.has("stress"))
-    return { name: "THE BURNOUT ANTIDOTE", tagline: "High pressure meets high resilience.", image: "/archetypes/burnout-antidote.jpg" };
+    return { name: "ATLAS", descriptor: "Carries the Weight of the World", tagline: "High pressure meets high resilience.", image: "/archetypes/burnout-antidote.jpg" };
   if (goals.has("skin"))
-    return { name: "THE GLOW PROTOCOL", tagline: "Inside-out radiance. Evidence-backed.", image: "/archetypes/glow-protocol.jpg" };
+    return { name: "APHRODITE", descriptor: "Beauty & Radiance", tagline: "Glow that starts from within.", image: "/archetypes/glow-protocol.jpg" };
   if (goals.has("immunity"))
-    return { name: "THE DEFENSE SYSTEM", tagline: "Your body's first line of defense, optimized.", image: "/archetypes/defense-system.jpg" };
+    return { name: "ATHENA", descriptor: "Wisdom & Strategic Defense", tagline: "Your body's smartest line of defense.", image: "/archetypes/defense-system.jpg" };
   if (goals.has("energy"))
-    return { name: "THE ENERGY BLUEPRINT", tagline: "Sustainable fuel. No crash required.", image: "/archetypes/energy-blueprint.jpg" };
-  return { name: "THE COMPLETE PROTOCOL", tagline: "Whole-system optimization. Nothing left behind.", image: "/archetypes/complete-protocol.jpg" };
+    return { name: "APOLLO", descriptor: "Sun, Light & Vitality", tagline: "Steady energy. No crash in sight.", image: "/archetypes/energy-blueprint.jpg" };
+  return { name: "ZEUS", descriptor: "Rules Every Domain", tagline: "Command over every part of the system.", image: "/archetypes/complete-protocol.jpg" };
 }
 
 function generateInsights(profile: UserProfile, scores: WellnessScores): string[] {
@@ -230,6 +230,7 @@ export function WellnessProfileCard({ profile }: WellnessProfileCardProps) {
   const scores = computeWellnessScores(profile);
   const archetype = getArchetype(profile);
   const archetypeTagline = w.taglines[archetype.name] ?? archetype.tagline;
+  const archetypeDescriptor = w.descriptors[archetype.name] ?? archetype.descriptor;
   const insights = generateInsights(profile, scores);
   const overall = Math.round(Object.values(scores).reduce((a, b) => a + b, 0) / DIMENSIONS.length);
 
@@ -412,9 +413,10 @@ export function WellnessProfileCard({ profile }: WellnessProfileCardProps) {
         {/* Archetype block, left aligned, near the top */}
         <div className="mb-6 md:mb-10">
           <p className="text-[9px] tracking-[0.2em] uppercase text-[#FFB326]/90 mb-1.5 md:mb-3">{w.yourArchetype}</p>
-          <h2 className="text-lg md:text-[38px] font-normal text-[#FFB326] leading-tight mb-1.5 md:mb-3 tracking-tight">
+          <h2 className="text-lg md:text-[38px] font-normal text-[#FFB326] leading-tight mb-1 tracking-tight">
             {archetype.name}
           </h2>
+          <p className="text-[10px] md:text-xs uppercase tracking-[0.15em] text-white/45 mb-2 md:mb-3">{archetypeDescriptor}</p>
           <p className="text-xs md:text-sm text-white/85 mb-3 md:mb-5 leading-relaxed">{archetypeTagline}</p>
 
           <div className="flex flex-wrap gap-1.5">
