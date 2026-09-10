@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ProgressIndicator, useLocale } from "@/components";
@@ -163,6 +163,17 @@ export default function IntakePage() {
       setErrors([]);
     }
   };
+
+  // Jump back to the top of the step on every step change. Scrolling the
+  // iframe's own document isn't enough (it renders at full content height
+  // with no scrollbar of its own) — the visible scroll position is owned by
+  // the parent page, so it also needs to be told to scroll up.
+  useEffect(() => {
+    window.scrollTo(0, 0);
+    if (window.self !== window.top) {
+      window.parent.postMessage({ type: "intake-scroll-top" }, "*");
+    }
+  }, [currentStep]);
 
   const handleSubmit = () => {
     if (validateCurrentStep()) {
