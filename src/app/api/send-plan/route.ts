@@ -4,16 +4,13 @@ import {
   generateRecommendations,
   groupBySchedule,
   validateProfile,
+  getSproutProductWants,
   SPROUT_PRODUCT_MATCH_SLUGS,
 } from "@/lib/recommendation-engine";
 import { renderPlanEmail, SproutEmailProduct, AmazonEmailProduct } from "@/lib/plan-email";
 import { AMAZON_PRODUCTS } from "@/lib/amazon-products";
 
 export const runtime = "nodejs";
-
-// Minimum shared ingredients for a Sprout product to count as a match.
-// Keep in step with the ".filter" in src/app/results/page.tsx.
-const SPROUT_MIN_MATCH = 2;
 
 // Display metadata for the two Sprout Lab products. Mirrors SPROUTLAB_PRODUCTS
 // in src/app/results/page.tsx (name / tagline / url only; the match logic
@@ -77,7 +74,13 @@ export async function POST(req: NextRequest) {
   const schedule = groupBySchedule(recommendations);
   const recSlugs = new Set(recommendations.map((r) => r.slug));
 
+  // Which product(s) to include is decided by goal + sex (see
+  // getSproutProductWants), not by ingredient-match count — Mycofuel and
+  // Mycoderm share most of their ingredient list, so a count-based guess
+  // here could disagree with what the results page shows.
+  const sproutWants = getSproutProductWants(profile as UserProfile);
   const sproutProducts: SproutEmailProduct[] = Object.entries(SPROUT_PRODUCT_MATCH_SLUGS)
+    .filter(([id]) => sproutWants[id as "mycofuel" | "mycoderm"])
     .map(([id, matchSlugs]) => {
       const matchedCount = matchSlugs.filter((s) => recSlugs.has(s)).length;
       const meta = SPROUT_PRODUCT_META[id];
@@ -85,7 +88,7 @@ export async function POST(req: NextRequest) {
       const { taglineIt, tagline, ...rest } = meta;
       return { ...rest, tagline: emailLocale === "it" ? taglineIt : tagline, matchedCount };
     })
-    .filter((p): p is SproutEmailProduct => p !== null && p.matchedCount >= SPROUT_MIN_MATCH);
+    .filter((p): p is SproutEmailProduct => p !== null);
 
   // Non-Sprout recommendations that have an Amazon.it listing, mirroring the
   // "other supplements" grid in src/app/results/page.tsx.

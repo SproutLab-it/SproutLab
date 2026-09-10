@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { ScheduleView, WellnessProfileCard, useLocale } from "@/components";
-import { generateRecommendations, groupBySchedule, SPROUT_PRODUCT_MATCH_SLUGS } from "@/lib/recommendation-engine";
+import { generateRecommendations, groupBySchedule, getSproutProductWants, SPROUT_PRODUCT_MATCH_SLUGS } from "@/lib/recommendation-engine";
 import { UserProfile, ScheduleGroup, SupplementRecommendation } from "@/types";
 import { getT } from "@/lib/i18n";
 import { AMAZON_PRODUCTS } from "@/lib/amazon-products";
@@ -144,10 +144,11 @@ export default function ResultsPage() {
   };
 
   const recommendedSlugs = recommendations.map((r) => r.slug);
+  const sproutWants = getSproutProductWants(profile);
   const matchedProducts = SPROUTLAB_PRODUCTS.map((product) => {
     const matched = product.matchSlugs.filter((s) => recommendedSlugs.includes(s));
     return { ...product, matched };
-  }).filter((p) => p.matched.length >= 2);
+  }).filter((p) => sproutWants[p.id as "mycofuel" | "mycoderm"]);
 
   const allSproutSlugs = new Set(SPROUTLAB_PRODUCTS.flatMap((p) => p.matchSlugs));
   const amazonSuggestions = recommendations.filter(

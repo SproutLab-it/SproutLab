@@ -43,9 +43,51 @@ export const SPROUT_PRODUCT_MATCH_SLUGS: Record<string, string[]> = {
   mycoderm: ["tremella", "cordyceps", "reishi", "lions-mane", "astaxanthin", "magnesium", "zinc", "vitamin-b6", "turmeric"],
 };
 
-// A Sprout product card only shows once this many of its ingredients are
-// in the plan; keep in step with the ".filter" in results/page.tsx.
+// Once a product is "wanted" (see getSproutProductWants below), this many of
+// its ingredients are protected from the MAX_RECOMMENDATIONS cap so it still
+// has enough matched ingredients to display properly.
 const SPROUT_MIN_MATCH = 2;
+
+// Deterministic Sprout Lab product decision, by goal + sex. This is the
+// single source of truth for which product(s) to show — everywhere that
+// decides "Mycofuel and/or Mycoderm?" (recommendation protection below, the
+// results page, and the plan email) must call this rather than re-deriving
+// the answer from ingredient-match counts, since Mycofuel and Mycoderm share
+// most of their ingredient list and a count-based guess can pick the wrong
+// product(s).
+//
+// Rules:
+// - energy / focus / muscle -> Mycofuel
+// - sleep / skin            -> Mycoderm
+// - stress                  -> Mycofuel for men, Mycoderm for women
+// - immunity / longevity on their own don't decide anything by themselves;
+//   the goal(s) they're paired with decide. If no decisive goal was picked
+//   at all (immunity and/or longevity alone), guarantee both products.
+export function getSproutProductWants(profile: Pick<UserProfile, "goals" | "sex">): {
+  mycofuel: boolean;
+  mycoderm: boolean;
+} {
+  const FUEL_GOALS = new Set<Goal>(["energy", "focus", "muscle"]);
+  const DERM_GOALS = new Set<Goal>(["sleep", "skin"]);
+
+  let mycofuel = false;
+  let mycoderm = false;
+  for (const goal of profile.goals) {
+    if (FUEL_GOALS.has(goal)) mycofuel = true;
+    else if (DERM_GOALS.has(goal)) mycoderm = true;
+    else if (goal === "stress") {
+      if (profile.sex === "male") mycofuel = true;
+      else if (profile.sex === "female") mycoderm = true;
+    }
+    // immunity / longevity fall through without deciding anything here
+  }
+  if (!mycofuel && !mycoderm) {
+    // No decisive goal selected (only immunity/longevity, alone or together) - guarantee both.
+    mycofuel = true;
+    mycoderm = true;
+  }
+  return { mycofuel, mycoderm };
+}
 
 // Cap the final plan so it never feels overwhelming.
 export const MAX_RECOMMENDATIONS = 6;
@@ -227,33 +269,13 @@ export function generateRecommendations(
     }
   }
 
-  // Which Sprout Lab product(s) must always match, per business rules:
-  // - energy / focus / muscle           -> Mycofuel
-  // - sleep / skin                      -> Mycoderm
-  // - stress                            -> Mycofuel for men, Mycoderm for women
-  // - immunity / longevity on their own -> don't decide anything by themselves;
-  //   the goal they're paired with decides, and if neither goal picked is
-  //   decisive (e.g. immunity + longevity together, or alone), guarantee both.
   const dietOrLifestyleSlugs = new Set([...dietPriority, ...additionalSupplements]);
-  const FUEL_GOALS = new Set<Goal>(["energy", "focus", "muscle"]);
-  const DERM_GOALS = new Set<Goal>(["sleep", "skin"]);
 
-  let wantsMycofuel = false;
-  let wantsMycoderm = false;
-  for (const goal of profile.goals) {
-    if (FUEL_GOALS.has(goal)) wantsMycofuel = true;
-    else if (DERM_GOALS.has(goal)) wantsMycoderm = true;
-    else if (goal === "stress") {
-      if (profile.sex === "male") wantsMycofuel = true;
-      else if (profile.sex === "female") wantsMycoderm = true;
-    }
-    // immunity / longevity fall through without deciding anything here
-  }
-  if (!wantsMycofuel && !wantsMycoderm) {
-    // No decisive goal selected (only immunity/longevity, alone or together) - guarantee both.
-    wantsMycofuel = true;
-    wantsMycoderm = true;
-  }
+  // Which Sprout Lab product(s) must always match — see getSproutProductWants
+  // for the business rules. The results page and plan email must use this
+  // same decision (not their own ingredient-match count) to decide what to
+  // show, since Mycofuel/Mycoderm share most of their ingredient list.
+  const { mycofuel: wantsMycofuel, mycoderm: wantsMycoderm } = getSproutProductWants(profile);
 
   const requiredProductIds = [
     ...(wantsMycofuel ? ["mycofuel"] : []),
