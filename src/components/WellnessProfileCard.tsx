@@ -15,6 +15,8 @@ type WellnessScores = {
   longevity: number;
 };
 
+type WellnessT = ReturnType<typeof getT>["results"]["wellness"];
+
 const DIMENSIONS: (keyof WellnessScores)[] = [
   "energy", "recovery", "resilience", "focus", "vitality", "longevity",
 ];
@@ -117,99 +119,262 @@ function getArchetype(profile: UserProfile): { name: string; tagline: string; im
   return { name: "THE COMPLETE PROTOCOL", tagline: "Whole-system optimization. Nothing left behind.", image: "/archetypes/complete-protocol.jpg" };
 }
 
-function generateInsights(profile: UserProfile, scores: WellnessScores): string[] {
-  const out: string[] = [];
-
-  if (profile.caffeineIntake === "high" && (profile.sleepQuality === "poor" || profile.sleepQuality === "fair"))
-    out.push("High caffeine is likely disrupting your sleep, a cycle your stack helps break");
-  if (profile.stressLevel === "high" && profile.sleepQuality !== "excellent" && profile.sleepQuality !== "good")
-    out.push("Your stress load is outpacing your recovery window");
-  if (profile.sunExposure === "low")
-    out.push("Low sun exposure makes D3 critical. Most indoor-living people are quietly deficient");
-  if (profile.diet === "vegan" || profile.diet === "vegetarian")
-    out.push("Plant-based diet means B12 depletes silently. Supplementing is non-negotiable");
-  if (profile.exerciseFrequency === "sedentary")
-    out.push("20 min of daily movement would shift your longevity score more than any supplement");
-  if (profile.sleepHours !== undefined && profile.sleepHours < 6)
-    out.push("Under 6h sleep accelerates cognitive decline. Your stack prioritizes this gap");
-
-  const sorted = (Object.entries(scores) as [keyof WellnessScores, number][]).sort((a, b) => b[1] - a[1]);
-  const [strongest] = sorted;
-  const weakest = sorted[sorted.length - 1];
-
-  if (out.length < 2)
-    out.push(`Strongest pillar: ${DIM_LABELS[strongest[0]]} (${strongest[1]}). Your plan reinforces this`);
-  if (out.length < 3)
-    out.push(`Biggest lever: ${DIM_LABELS[weakest[0]]} (${weakest[1]}). Targeted support in your stack`);
-
-  return out.slice(0, 3);
+function peakDimension(scores: WellnessScores): keyof WellnessScores {
+  return DIMENSIONS.reduce((a, b) => (scores[b] > scores[a] ? b : a));
 }
 
-function WellnessRadarChart({ scores, progress, dimLabels, size = 240 }: { scores: WellnessScores; progress: number; dimLabels: Record<string, string>; size?: number }) {
+/* --- Signature "route" radar: the shape people recognise as their profile --- */
+function WellnessRadarChart({
+  scores, progress, dimLabels, peak,
+}: {
+  scores: WellnessScores;
+  progress: number;
+  dimLabels: Record<string, string>;
+  peak: keyof WellnessScores;
+}) {
+  const size = 260;
   const cx = size / 2;
   const cy = size / 2;
-  const maxR = size * 0.325;
-  const labelR = size * 0.442;
+  const maxR = size * 0.34;
+  const labelR = size * 0.46;
   const n = DIMENSIONS.length;
 
   const angle = (i: number) => (i * 2 * Math.PI) / n - Math.PI / 2;
-
-  const axisPoint = (i: number, scale: number) => ({
-    x: cx + maxR * scale * Math.cos(angle(i)),
-    y: cy + maxR * scale * Math.sin(angle(i)),
+  const axisPoint = (i: number, s: number) => ({
+    x: cx + maxR * s * Math.cos(angle(i)),
+    y: cy + maxR * s * Math.sin(angle(i)),
   });
-
   const labelPoint = (i: number) => ({
     x: cx + labelR * Math.cos(angle(i)),
     y: cy + labelR * Math.sin(angle(i)),
   });
-
   const textAnchor = (i: number): "start" | "end" | "middle" => {
-    const cos = Math.cos(angle(i));
-    return cos > 0.3 ? "start" : cos < -0.3 ? "end" : "middle";
+    const c = Math.cos(angle(i));
+    return c > 0.3 ? "start" : c < -0.3 ? "end" : "middle";
+  };
+  const baseline = (i: number): "hanging" | "auto" | "middle" => {
+    const s = Math.sin(angle(i));
+    return s > 0.3 ? "hanging" : s < -0.3 ? "auto" : "middle";
   };
 
-  const dominantBaseline = (i: number): "hanging" | "auto" | "middle" => {
-    const sin = Math.sin(angle(i));
-    return sin > 0.3 ? "hanging" : sin < -0.3 ? "auto" : "middle";
-  };
-
-  const pts = DIMENSIONS.map((dim, i) => axisPoint(i, Math.max((scores[dim] / 100) * progress, 0.02)));
+  const pts = DIMENSIONS.map((d, i) => axisPoint(i, Math.max((scores[d] / 100) * progress, 0.02)));
   const dataPath = pts.map((p, i) => `${i === 0 ? "M" : "L"}${p.x.toFixed(2)},${p.y.toFixed(2)}`).join(" ") + " Z";
-  const gridPath = (level: number) =>
+  const gridPath = (lvl: number) =>
     DIMENSIONS.map((_, i) => {
-      const p = axisPoint(i, level);
+      const p = axisPoint(i, lvl);
       return `${i === 0 ? "M" : "L"}${p.x.toFixed(2)},${p.y.toFixed(2)}`;
     }).join(" ") + " Z";
 
   return (
-    <svg viewBox={`0 0 ${size} ${size}`} width="100%" height="100%" className="overflow-visible">
-      {[0.25, 0.5, 0.75, 1.0].map((lvl, i) => (
-        <path key={i} d={gridPath(lvl)} fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth={1} />
+    <svg viewBox={`0 0 ${size} ${size}`} width="100%" height="100%" style={{ overflow: "visible" }}>
+      {[0.25, 0.5, 0.75, 1].map((lvl, i) => (
+        <path key={i} d={gridPath(lvl)} fill="none" stroke="rgba(255,255,255,0.13)" strokeWidth={1} />
       ))}
       {DIMENSIONS.map((_, i) => {
-        const outer = axisPoint(i, 1);
+        const o = axisPoint(i, 1);
         return (
-          <line key={i} x1={cx} y1={cy} x2={outer.x.toFixed(2)} y2={outer.y.toFixed(2)}
-            stroke="rgba(255,255,255,0.1)" strokeWidth={1} />
+          <line key={i} x1={cx} y1={cy} x2={o.x.toFixed(2)} y2={o.y.toFixed(2)}
+            stroke="rgba(255,255,255,0.13)" strokeWidth={1} />
         );
       })}
-      <path d={dataPath} fill="rgba(255,179,38,0.15)" stroke="#FFB326" strokeWidth={2} strokeLinejoin="round" />
-      {pts.map((p, i) => (
-        <circle key={i} cx={p.x.toFixed(2)} cy={p.y.toFixed(2)} r={4} fill="#FFB326" />
-      ))}
-      {DIMENSIONS.map((dim, i) => {
+
+      {/* soft glow behind the shape (flat strokes only, so html-to-image can rasterise it) */}
+      <path d={dataPath} fill="none" stroke="rgba(255,179,38,0.28)" strokeWidth={11} strokeLinejoin="round" />
+      {/* the shape */}
+      <path d={dataPath} fill="rgba(255,179,38,0.14)" stroke="none" strokeLinejoin="round" />
+      <path d={dataPath} fill="none" stroke="#FFB326" strokeWidth={2.5} strokeLinejoin="round" />
+
+      {pts.map((p, i) => {
+        const isPeak = DIMENSIONS[i] === peak;
+        return (
+          <circle key={i} cx={p.x.toFixed(2)} cy={p.y.toFixed(2)}
+            r={isPeak ? 5.5 : 3.5} fill="#FFB326"
+            stroke={isPeak ? "rgba(255,179,38,0.3)" : "none"} strokeWidth={isPeak ? 6 : 0} />
+        );
+      })}
+
+      {DIMENSIONS.map((d, i) => {
         const lp = labelPoint(i);
         return (
-          <text key={dim} x={lp.x.toFixed(2)} y={lp.y.toFixed(2)}
-            textAnchor={textAnchor(i)} dominantBaseline={dominantBaseline(i)}
-            fontSize={8} letterSpacing="0.1em" fill="rgba(252,252,247,0.92)"
+          <text key={d} x={lp.x.toFixed(2)} y={lp.y.toFixed(2)}
+            textAnchor={textAnchor(i)} dominantBaseline={baseline(i)}
+            fontSize={8.5} letterSpacing="0.12em" fontWeight={d === peak ? 600 : 400}
+            fill={d === peak ? "#FFB326" : "rgba(252,252,247,0.9)"}
             fontFamily="ABCMonumentGrotesk, Arial, sans-serif">
-            {(dimLabels[dim] ?? DIM_LABELS[dim]).toUpperCase()}
+            {(dimLabels[d] ?? DIM_LABELS[d]).toUpperCase()}
           </text>
         );
       })}
     </svg>
+  );
+}
+
+/* --- The card body, shared by the on-page version and the 1080x1920 export --- */
+function CardBody({
+  variant, archetypeName, tagline, chips, scores, overall, progress, w, onShare, shareLabel, shareDisabled,
+}: {
+  variant: "inline" | "export";
+  archetypeName: string;
+  tagline: string;
+  chips: string[];
+  scores: WellnessScores;
+  overall: number;
+  progress: number;
+  w: WellnessT;
+  onShare?: () => void;
+  shareLabel?: string;
+  shareDisabled?: boolean;
+}) {
+  const isExport = variant === "export";
+  const peak = peakDimension(scores);
+
+  return (
+    <div
+      style={{
+        position: "relative",
+        zIndex: 2,
+        display: "flex",
+        flexDirection: "column",
+        minHeight: isExport ? 1920 : undefined,
+        color: "#fff",
+        fontFamily: "ABCMonumentGrotesk, Arial, sans-serif",
+        fontSize: isExport ? 31 : "clamp(12.5px, 3.5vw, 16px)",
+        padding: isExport ? "3.2em 2.7em 2.6em" : "1.1em 1.15em 1.2em",
+      }}
+    >
+      {/* header group */}
+      <div>
+        <div
+          style={{
+            display: "flex", justifyContent: "space-between", alignItems: "baseline",
+            borderBottom: "1px solid rgba(255,255,255,0.1)", paddingBottom: "0.7em", marginBottom: "1.5em",
+          }}
+        >
+          <span style={{ fontSize: "0.62em", letterSpacing: "0.22em", textTransform: "uppercase", color: "rgba(255,179,38,0.85)" }}>
+            {w.topbar}
+          </span>
+          <span style={{ fontSize: "0.62em", letterSpacing: "0.18em", color: "rgba(255,255,255,0.4)" }}>2026</span>
+        </div>
+
+        <div style={{ fontSize: "0.6em", letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(255,179,38,0.9)", marginBottom: "0.7em" }}>
+          {w.yourArchetype}
+        </div>
+        <div style={{ fontSize: "2.55em", lineHeight: 1.02, letterSpacing: "-0.02em", color: "#FFB326", marginBottom: "0.42em" }}>
+          {archetypeName}
+        </div>
+        <div
+          style={{
+            fontSize: "0.95em", lineHeight: 1.5, color: "rgba(255,255,255,0.85)", marginBottom: "1.15em",
+            display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden",
+          }}
+        >
+          {tagline}
+        </div>
+
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5em" }}>
+          {chips.map((c) => (
+            <span
+              key={c}
+              style={{
+                fontSize: "0.6em", letterSpacing: "0.1em", textTransform: "uppercase",
+                color: "rgba(255,255,255,0.8)", border: "1px solid rgba(255,255,255,0.3)", padding: "0.5em 0.75em",
+              }}
+            >
+              {c}
+            </span>
+          ))}
+        </div>
+      </div>
+
+      {/* centre group: signature radar + hero index */}
+      <div
+        style={{
+          flex: isExport ? 1 : undefined,
+          display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+          padding: isExport ? "1.4em 0" : "1.8em 0 1.4em",
+        }}
+      >
+        <div style={{ width: isExport ? "20em" : "16.5em", height: isExport ? "20em" : "16.5em" }}>
+          <WellnessRadarChart scores={scores} progress={progress} dimLabels={w.dims} peak={peak} />
+        </div>
+        <div style={{ textAlign: "center", marginTop: isExport ? "1.5em" : "1.1em" }}>
+          <div style={{ fontSize: "4.7em", fontWeight: 300, lineHeight: 1, fontVariantNumeric: "tabular-nums" }}>
+            {Math.round(overall * progress)}
+          </div>
+          <div style={{ fontSize: "0.6em", letterSpacing: "0.24em", textTransform: "uppercase", color: "rgba(255,255,255,0.45)", marginTop: "0.85em" }}>
+            {w.indexLabel}
+          </div>
+        </div>
+      </div>
+
+      {/* splits group: the six pillars, Strava-style */}
+      <div>
+        <div style={{ borderTop: "1px solid rgba(255,255,255,0.12)", paddingTop: "1em", display: "flex", flexDirection: "column", gap: "0.6em" }}>
+          {DIMENSIONS.map((d) => {
+            const isPeak = d === peak;
+            return (
+              <div key={d} style={{ display: "flex", alignItems: "center", gap: "0.8em" }}>
+                <span
+                  style={{
+                    width: "6.6em", flexShrink: 0, fontSize: "0.62em", letterSpacing: "0.12em", textTransform: "uppercase",
+                    color: isPeak ? "rgba(255,255,255,0.95)" : "rgba(255,255,255,0.6)",
+                  }}
+                >
+                  {w.dims[d] ?? DIM_LABELS[d]}
+                </span>
+                <span style={{ flex: 1, height: "0.5em", background: "rgba(255,255,255,0.12)", position: "relative", overflow: "hidden" }}>
+                  <span
+                    style={{
+                      position: "absolute", left: 0, top: 0, bottom: 0,
+                      width: `${Math.max(scores[d] * progress, 0)}%`,
+                      background: isPeak ? "#FFB326" : "rgba(255,179,38,0.7)",
+                    }}
+                  />
+                </span>
+                <span
+                  style={{
+                    width: "2.6em", flexShrink: 0, textAlign: "right", fontSize: "0.92em", fontVariantNumeric: "tabular-nums",
+                    color: "#fff", display: "flex", alignItems: "center", justifyContent: "flex-end", gap: "0.28em",
+                  }}
+                >
+                  {isPeak && <span style={{ color: "#FFB326", fontSize: "0.7em" }}>▲</span>}
+                  {Math.round(scores[d] * progress)}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* footer */}
+        <div
+          style={{
+            borderTop: "1px solid rgba(255,255,255,0.12)", marginTop: "1em", paddingTop: "1em",
+            display: "flex", alignItems: "center", justifyContent: "space-between", gap: "1em",
+          }}
+        >
+          <span style={{ fontSize: "0.6em", letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(255,255,255,0.4)" }}>
+            sproutlab.it
+          </span>
+          {isExport ? (
+            <span style={{ fontSize: "0.62em", letterSpacing: "0.16em", textTransform: "uppercase", color: "rgba(255,179,38,0.9)" }}>
+              {w.cta} ↗
+            </span>
+          ) : (
+            <button
+              onClick={onShare}
+              disabled={shareDisabled}
+              style={{
+                fontSize: "0.68em", fontWeight: 500, letterSpacing: "0.14em", textTransform: "uppercase",
+                background: "#FFB326", color: "#2E1B12", borderRadius: "999px", padding: "0.95em 1.6em",
+                border: "none", cursor: shareDisabled ? "default" : "pointer", opacity: shareDisabled ? 0.5 : 1,
+              }}
+            >
+              {shareLabel}
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -222,26 +387,21 @@ export function WellnessProfileCard({ profile }: WellnessProfileCardProps) {
   const [hasEnteredView, setHasEnteredView] = useState(false);
   const [shareState, setShareState] = useState<"idle" | "generating" | "done">("idle");
   const cardRef = useRef<HTMLDivElement>(null);
-  const footerRef = useRef<HTMLDivElement>(null);
-  const bgImgRef = useRef<HTMLImageElement>(null);
-  const overlayRef = useRef<HTMLDivElement>(null);
+  const exportRef = useRef<HTMLDivElement>(null);
 
   const w = getT(useLocale()).results.wellness;
   const scores = computeWellnessScores(profile);
   const archetype = getArchetype(profile);
   const archetypeTagline = w.taglines[archetype.name] ?? archetype.tagline;
-  const insights = generateInsights(profile, scores);
   const overall = Math.round(Object.values(scores).reduce((a, b) => a + b, 0) / DIMENSIONS.length);
 
   const [bgDataUrl, setBgDataUrl] = useState<string>(archetype.image);
 
-  // Wait until the card scrolls into view before running the reveal animation,
-  // so the radar/scores animate in when the user actually reaches this screen.
+  // Run the reveal animation only once the card scrolls into view.
   useEffect(() => {
     const el = cardRef.current;
     if (!el) return;
     if (typeof IntersectionObserver === "undefined") {
-      // Very old browsers: skip the scroll-reveal gate rather than getting stuck at 0.
       setHasEnteredView(true);
       return;
     }
@@ -252,7 +412,7 @@ export function WellnessProfileCard({ profile }: WellnessProfileCardProps) {
           observer.disconnect();
         }
       },
-      { threshold: 0.3 }
+      { threshold: 0.3 },
     );
     observer.observe(el);
     return () => observer.disconnect();
@@ -270,7 +430,7 @@ export function WellnessProfileCard({ profile }: WellnessProfileCardProps) {
     return () => cancelAnimationFrame(raf);
   }, [hasEnteredView]);
 
-  // Pre-load the archetype background as base64 so html-to-image can embed it in the capture
+  // Pre-load the archetype background as a data URL so html-to-image can embed it.
   useEffect(() => {
     setBgDataUrl(archetype.image);
     fetch(archetype.image)
@@ -284,78 +444,76 @@ export function WellnessProfileCard({ profile }: WellnessProfileCardProps) {
   }, [archetype.image]);
 
   const handleShare = async () => {
-    if (!cardRef.current || shareState === "generating") return;
+    const node = exportRef.current;
+    if (!node || shareState === "generating") return;
     setShareState("generating");
     try {
-      // Hide elements that html-to-image struggles with, so we draw them manually on canvas
-      if (footerRef.current) footerRef.current.style.display = "none";
-      if (bgImgRef.current) bgImgRef.current.style.visibility = "hidden";
-      if (overlayRef.current) overlayRef.current.style.visibility = "hidden";
-
-      const cardBlob = await toBlob(cardRef.current, { pixelRatio: 2 });
-
-      if (footerRef.current) footerRef.current.style.display = "";
-      if (bgImgRef.current) bgImgRef.current.style.visibility = "";
-      if (overlayRef.current) overlayRef.current.style.visibility = "";
+      // html-to-image only rasterises the card content (text + SVG on a
+      // transparent ground). The photo background and overlay are composited
+      // separately on a canvas, since html-to-image is unreliable with
+      // background images / object-fit.
+      const cssHeight = node.offsetHeight || 1920;
+      const withTimeout = <T,>(p: Promise<T>, ms: number) =>
+        Promise.race([p, new Promise<never>((_, rej) => setTimeout(() => rej(new Error("timeout")), ms))]);
+      const cardBlob = await withTimeout(toBlob(node, { pixelRatio: 2 }), 12000);
       if (!cardBlob) throw new Error("capture failed");
 
-      // Load the card capture
-      const cardImg = new Image();
+      const loadImage = (src: string) =>
+        new Promise<HTMLImageElement>((res, rej) => {
+          const img = new Image();
+          img.onload = () => res(img);
+          img.onerror = rej;
+          img.src = src;
+        });
+
       const cardUrl = URL.createObjectURL(cardBlob);
-      await new Promise<void>((res) => { cardImg.onload = () => res(); cardImg.src = cardUrl; });
+      const cardImg = await loadImage(cardUrl);
+      const bgImg = await loadImage(bgDataUrl).catch(() => null);
 
-      // Load the background image directly (already a base64 data URL)
-      const bgImg = new Image();
-      await new Promise<void>((res, rej) => {
-        bgImg.onload = () => res();
-        bgImg.onerror = rej;
-        bgImg.src = bgDataUrl;
-      });
-
-      const W = 1080, H = 1920;
+      const W = 1080 * 2;
+      const H = Math.round(cssHeight * 2);
       const canvas = document.createElement("canvas");
       canvas.width = W;
       canvas.height = H;
       const ctx = canvas.getContext("2d")!;
 
-      // Base fill
       ctx.fillStyle = "#14060a";
       ctx.fillRect(0, 0, W, H);
 
-      // Draw background image with cover-crop
-      const bgRatio = bgImg.width / bgImg.height;
-      const canvasRatio = W / H;
-      let sx = 0, sy = 0, sw = bgImg.width, sh = bgImg.height;
-      if (bgRatio > canvasRatio) {
-        sw = bgImg.height * canvasRatio;
-        sx = (bgImg.width - sw) / 2;
-      } else {
-        sh = bgImg.width / canvasRatio;
-        sy = (bgImg.height - sh) / 2;
+      if (bgImg) {
+        const canvasRatio = W / H;
+        const bgRatio = bgImg.width / bgImg.height;
+        let sx = 0, sy = 0, sw = bgImg.width, sh = bgImg.height;
+        if (bgRatio > canvasRatio) {
+          sw = bgImg.height * canvasRatio;
+          sx = (bgImg.width - sw) / 2;
+        } else {
+          sh = bgImg.width / canvasRatio;
+          sy = (bgImg.height - sh) / 2;
+        }
+        ctx.drawImage(bgImg, sx, sy, sw, sh, 0, 0, W, H);
       }
-      ctx.drawImage(bgImg, sx, sy, sw, sh, 0, 0, W, H);
 
-      // Dark overlay
-      ctx.fillStyle = "rgba(20,12,6,0.82)";
+      ctx.fillStyle = "rgba(20,12,6,0.86)";
       ctx.fillRect(0, 0, W, H);
 
-      // Composite card content centered
-      const padding = 60;
-      const scale = (W - padding * 2) / cardImg.width;
-      const dw = cardImg.width * scale;
-      const dh = cardImg.height * scale;
-      ctx.drawImage(cardImg, (W - dw) / 2, (H - dh) / 2, dw, dh);
+      ctx.drawImage(cardImg, 0, 0, W, H);
+
+      // brand rule at the top
+      ctx.fillStyle = "#FFB326";
+      ctx.fillRect(0, 0, W, 6);
+
       URL.revokeObjectURL(cardUrl);
 
-      const storyBlob = await new Promise<Blob>((resolve, reject) =>
-        canvas.toBlob((b) => b ? resolve(b) : reject(new Error("canvas failed")), "image/png")
+      const blob = await new Promise<Blob>((resolve, reject) =>
+        canvas.toBlob((b) => (b ? resolve(b) : reject(new Error("canvas failed"))), "image/png"),
       );
 
-      const file = new File([storyBlob], "sprout-wellness-profile.png", { type: "image/png" });
+      const file = new File([blob], "sprout-wellness-profile.png", { type: "image/png" });
       if (typeof navigator !== "undefined" && navigator.canShare?.({ files: [file] })) {
         await navigator.share({ files: [file], title: archetype.name });
       } else {
-        const url = URL.createObjectURL(storyBlob);
+        const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
         a.download = "sprout-wellness-profile.png";
@@ -365,12 +523,12 @@ export function WellnessProfileCard({ profile }: WellnessProfileCardProps) {
       setShareState("done");
       setTimeout(() => setShareState("idle"), 2500);
     } catch {
-      if (footerRef.current) footerRef.current.style.display = "";
-      if (bgImgRef.current) bgImgRef.current.style.visibility = "";
-      if (overlayRef.current) overlayRef.current.style.visibility = "";
       setShareState("idle");
     }
   };
+
+  const shareLabel =
+    shareState === "generating" ? w.sharing : shareState === "done" ? w.shared : w.share;
 
   const chips = [
     w.chipAge(profile.age),
@@ -380,78 +538,59 @@ export function WellnessProfileCard({ profile }: WellnessProfileCardProps) {
   ].filter(Boolean) as string[];
 
   return (
-    <div
-      ref={cardRef}
-      className="overflow-hidden relative"
-      style={{ borderTop: "2px solid #FFB326" }}
-    >
-      {/* Background image */}
-      <img
-        ref={bgImgRef}
-        src={bgDataUrl}
-        alt=""
-        aria-hidden
-        className="absolute inset-0 w-full h-full object-cover object-center pointer-events-none select-none"
-        style={{ zIndex: 0 }}
-      />
-      {/* Dark overlay */}
+    <>
+      {/* On-page card */}
+      <div ref={cardRef} style={{ position: "relative", overflow: "hidden", borderTop: "2px solid #FFB326" }}>
+        <div
+          style={{
+            position: "absolute", inset: 0,
+            backgroundImage: `url(${bgDataUrl})`,
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+          }}
+        />
+        <div style={{ position: "absolute", inset: 0, background: "rgba(20,12,6,0.86)" }} />
+        <CardBody
+          variant="inline"
+          archetypeName={archetype.name}
+          tagline={archetypeTagline}
+          chips={chips}
+          scores={scores}
+          overall={overall}
+          progress={progress}
+          w={w}
+          onShare={handleShare}
+          shareLabel={shareLabel}
+          shareDisabled={shareState === "generating"}
+        />
+      </div>
+
+      {/* 1080-wide target rasterised for the shareable export. Content only: the
+          photo background is composited on canvas in handleShare. Kept on-screen
+          at (0,0) so html-to-image measures it correctly, but fully transparent
+          and click-through via the wrapper (opacity is not read on exportRef
+          itself, so the capture is opaque). */}
       <div
-        ref={overlayRef}
-        className="absolute inset-0 pointer-events-none"
-        style={{ backgroundColor: "rgba(20,12,6,0.82)", zIndex: 1 }}
-      />
-      {/* Content */}
-      <div style={{ position: "relative", zIndex: 2 }}>
-      {/* Top bar */}
-      <div className="border-b border-white/[0.08] px-4 md:px-8 py-3 flex items-center justify-between">
-        <p className="text-[10px] tracking-[0.22em] uppercase text-[#FFB326]/80">{w.topbar}</p>
-        <p className="text-[10px] tracking-widest text-white/40">2026</p>
-      </div>
-
-      <div className="px-4 md:px-12 pt-4 md:pt-6 pb-6 md:pb-10">
-        {/* Archetype block, left aligned, near the top */}
-        <div className="mb-6 md:mb-10">
-          <p className="text-[9px] tracking-[0.2em] uppercase text-[#FFB326]/90 mb-1.5 md:mb-3">{w.yourArchetype}</p>
-          <h2 className="text-lg md:text-[38px] font-normal text-[#FFB326] leading-tight mb-1.5 md:mb-3 tracking-tight">
-            {archetype.name}
-          </h2>
-          <p className="text-xs md:text-sm text-white/85 mb-3 md:mb-5 leading-relaxed">{archetypeTagline}</p>
-
-          <div className="flex flex-wrap gap-1.5">
-            {chips.map((chip) => (
-              <span key={chip} className="text-[9px] tracking-[0.1em] uppercase text-white/80 border border-white/30 px-2 py-1">
-                {chip}
-              </span>
-            ))}
-          </div>
-        </div>
-
-        {/* Radar + overall score, centered */}
-        <div className="flex flex-col items-center gap-4 md:gap-6 mb-4 md:mb-6">
-          <div className="w-[230px] h-[230px] md:w-[320px] md:h-[320px]">
-            <WellnessRadarChart scores={scores} progress={progress} dimLabels={w.dims} size={240} />
-          </div>
-          <div className="text-center">
-            <p className="text-3xl md:text-[46px] font-light text-white leading-none tabular-nums">
-              {Math.round(overall * progress)}
-            </p>
-            <p className="text-[8px] tracking-[0.24em] uppercase text-white/40 mt-1">{w.overall}</p>
-          </div>
-        </div>
-
-        {/* Footer */}
-        <div ref={footerRef} className="mt-5 md:mt-6 flex items-center justify-between gap-4 flex-wrap">
-          <p className="text-[10px] tracking-[0.22em] uppercase text-white/40">sproutlab.it</p>
-          <button
-            onClick={handleShare}
-            disabled={shareState === "generating"}
-            className="text-[10px] md:text-xs font-medium tracking-[0.16em] uppercase bg-[#FFB326] text-[#2E1B12] rounded-full px-5 py-2.5 md:px-6 md:py-3 shadow-lg shadow-[#FFB326]/25 hover:bg-[#e6a020] transition-colors disabled:opacity-50"
-          >
-            {shareState === "generating" ? w.sharing : shareState === "done" ? w.shared : w.share}
-          </button>
+        aria-hidden
+        style={{
+          position: "fixed", top: 0, left: 0, zIndex: -1,
+          opacity: 0, pointerEvents: "none", overflow: "hidden",
+          width: 1080, height: 1,
+        }}
+      >
+        <div ref={exportRef} style={{ width: 1080 }}>
+          <CardBody
+            variant="export"
+            archetypeName={archetype.name}
+            tagline={archetypeTagline}
+            chips={chips}
+            scores={scores}
+            overall={overall}
+            progress={1}
+            w={w}
+          />
         </div>
       </div>
-      </div> {/* end content wrapper */}
-    </div>
+    </>
   );
 }
