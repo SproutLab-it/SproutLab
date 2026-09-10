@@ -260,7 +260,7 @@ export default function IntakePage() {
   };
 
   return (
-    <div className="grow bg-[#FCFCF7] pt-28 pb-6 px-4">
+    <div className="grow bg-[#FCFCF7] pt-36 pb-6 px-4">
       <div className="max-w-2xl mx-auto">
         <div className="mb-6">
           <Link href="/" className="text-xs tracking-widest uppercase text-[#9C8B78] hover:text-[#2E1B12] transition-colors">
